@@ -7,11 +7,10 @@
 #include "include/weakly_monotone.h"
 #include "include/CoveragePlanner.h"
 
-
 int main(){
     // TODO use polygon_coverage_planning namespace and calculate the sweeps
     int a = 10; 
 
-
-    // polygon_coverage_planning::CoveragePlanner planner = polygon_coverage_planning::CoveragePlanner();
+    CoveragePlanner planner = CoveragePlanner();
+    std::cout << "test!" << std::endl;
 }

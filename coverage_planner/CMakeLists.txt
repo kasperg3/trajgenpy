@@ -10,7 +10,8 @@ include_directories(${CGAL_INCLUDE_DIRS} )
 # Add executable and link with CGAL library
 add_executable(my_exe main.cpp)
 target_link_libraries(my_exe ${CGAL_LIBRARIES})
+target_include_directories(my_exe PRIVATE "include/")
 
 # Include all sources in src directory
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES  "src/*.cc" "src/*.cpp")
 target_sources(my_exe PRIVATE ${SOURCES})
