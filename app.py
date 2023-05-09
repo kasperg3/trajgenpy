@@ -1,10 +1,13 @@
+import scikit_build_example._core as planner
 from flask import Flask, jsonify
 
-app = Flask(__name__)
+planner.add(1,2)
 
-@app.route('/example', methods=['post'])
-def example():
-    return jsonify({'result': 'success'})  # Return a JSON response
+# app = Flask(__name__)
 
-if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
+# @app.route('/example', methods=['post'])
+# def example():
+#     return jsonify({'result': 'success'})  # Return a JSON response
+
+# if __name__ == '__main__':
+#     app.run(debug=True, host="0.0.0.0", port=5000)

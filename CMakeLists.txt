@@ -1,9 +1,24 @@
-cmake_minimum_required(VERSION 3.16)
-project(application)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_C_STANDARD 99)
+cmake_minimum_required(VERSION 3.15...3.26)
+project(${SKBUILD_PROJECT_NAME} VERSION ${SKBUILD_PROJECT_VERSION})
 
-set(PROJECT_NAME planner)
+# Find CGAL library
+find_package(CGAL REQUIRED)
 
-add_subdirectory(coverage_planner)
+# pybind11
+find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+find_package(pybind11 CONFIG REQUIRED)
+
+python_add_library(_core MODULE main.cpp WITH_SOABI)
+target_link_libraries(_core PRIVATE pybind11::headers ${CGAL_LIBRARIES} pybind11::module)
+target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})
+
+# Include CGAL headers
+include_directories(${CGAL_INCLUDE_DIRS} )
+target_include_directories(_core PRIVATE "include/")
+
+# Include all sources in src directory
+file(GLOB SOURCES  "src/*.cc" "src/*.cpp")
+target_sources(_core PRIVATE ${SOURCES})
+
+install(TARGETS _core DESTINATION scikit_build_example)

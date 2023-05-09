@@ -1,7 +1,11 @@
 FROM python:3.9
 
-RUN apt-get update && apt-get -y install libcgal-dev
+RUN apt-get update && apt-get -y install libcgal-dev pybind11-dev
 
+# TODO mkdir build
+# cmake ..
+# make
+# what else?
 
 # Set the working directory to /app
 WORKDIR /app
