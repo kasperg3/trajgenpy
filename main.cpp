@@ -18,18 +18,6 @@
 
 namespace py = pybind11;
 
-// Utility functions
-// parse GeoJson to Polygon and PolygonWithHoles
-// serialize sweeps and polygons to GeoJson
-
-// functions to bind
-// decompose
-// sweep generation
-
-Polygon_2 parsePolygon(std::string geojson){
-    return Polygon_2();
-}
-
 std::string polygon_to_string(const Polygon_2& poly) {
     std::stringstream ss;
     ss << "Polygon with " << poly.size() << " vertices:";
@@ -55,7 +43,7 @@ py::list decompose(const PolygonWithHoles& pwh){
     return result;
 }
 
-py::list generate_sweeps(const Polygon_2& poly){
+py::list generate_sweeps(const Polygon_2& poly, const double sweep_offset){
     py::list result;
     // // Traverse through all polygons
     std::vector<std::vector<Segment_2>> sweeps;
@@ -63,34 +51,30 @@ py::list generate_sweeps(const Polygon_2& poly){
     Direction_2 bestDir;
     polygon_coverage_planning::findBestSweepDir(poly, &bestDir);
     // Construct the sweep plan
-    const double maxSweepOffset = 0.1; // TODO this should be changed to an appropriate value, this should be calculated based on altitude and 
     std::vector<Segment_2> sweep;
-    if (!polygon_coverage_planning::computeSweep(
-        poly, maxSweepOffset, bestDir, false,
-        sweep))
+    if (polygon_coverage_planning::computeSweep(poly, sweep_offset, bestDir, false,sweep))
     {
-    } else {
         for(auto segment: sweep)
             result.append(segment);
+    } else {
+     // TODO error handling    
     }
     
     return result; 
-
-
 }
 
-PYBIND11_MODULE(_core, m) {
+PYBIND11_MODULE(core, m) {
     m.doc() = R"pbdoc(
-        Pybind11 example plugin
+        Pybind11 core plugin
         -----------------------
 
-        .. currentmodule:: coverage_planner
+        .. currentmodule:: core
 
         .. autosummary::
            :toctree: _generate
 
-           add
-           subtract
+           decompose
+           generate_sweeps
     )pbdoc";
 
     // Expose the Point_2 type to Python
@@ -152,11 +136,23 @@ PYBIND11_MODULE(_core, m) {
         });
 
     m.def("decompose", &decompose, R"pbdoc(
-        TODO add description
+        Decomposes the input polygon into a list of polygons.
+
+            Args:
+                polygon: A Polygon_with_holes_2 object.
+
+            Returns:
+                A list of Polygon_2 objects. 
     )pbdoc");
 
     m.def("generate_sweeps", &generate_sweeps, R"pbdoc(
-        TODO add description
+        Generates a sweep pattern from the input polygon.
+
+            Args:
+                polygon: A Polygon_2 object.
+
+            Returns:
+                A tuple containing a Segment_2 object.
     )pbdoc");
 
     #ifdef VERSION_INFO

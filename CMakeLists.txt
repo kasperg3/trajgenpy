@@ -9,16 +9,16 @@ find_package(CGAL REQUIRED)
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 
-python_add_library(_core MODULE main.cpp WITH_SOABI)
-target_link_libraries(_core PRIVATE pybind11::headers ${CGAL_LIBRARIES} pybind11::module)
-target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})
+python_add_library(core MODULE main.cpp WITH_SOABI)
+target_link_libraries(core PRIVATE pybind11::headers ${CGAL_LIBRARIES} pybind11::module)
+target_compile_definitions(core PRIVATE VERSION_INFO=${PROJECT_VERSION})
 
 # Include CGAL headers
 include_directories(${CGAL_INCLUDE_DIRS} )
-target_include_directories(_core PRIVATE "include/")
+target_include_directories(core PRIVATE "include/")
 
 # Include all sources in src directory
 file(GLOB SOURCES  "src/*.cc" "src/*.cpp")
-target_sources(_core PRIVATE ${SOURCES})
+target_sources(core PRIVATE ${SOURCES})
 
-install(TARGETS _core DESTINATION coverage_planner)
+install(TARGETS core DESTINATION coverage_planner)
