@@ -14,6 +14,7 @@ PolygonWithHoles CoveragePlanner::getPolygonWithHoles()
   for (auto hole : restrictedAreas) {
     polygonWithHoles.add_hole(hole);
   }
+  
   return polygonWithHoles;
 }
 
