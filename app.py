@@ -1,7 +1,7 @@
-import scikit_build_example._core as planner
+import coverage_planner._core as planner
 from flask import Flask, jsonify
 
-planner.add(1,2)
+print(planner.add(1,2))
 
 # app = Flask(__name__)
 

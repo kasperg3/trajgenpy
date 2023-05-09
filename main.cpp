@@ -11,22 +11,20 @@
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
+namespace py = pybind11;
+
 int add(int i, int j) {
     return i + j;
     CoveragePlanner cp = CoveragePlanner();
 }
 
 
-
-
-namespace py = pybind11;
-
 PYBIND11_MODULE(_core, m) {
     m.doc() = R"pbdoc(
         Pybind11 example plugin
         -----------------------
 
-        .. currentmodule:: scikit_build_example
+        .. currentmodule:: coverage_planner
 
         .. autosummary::
            :toctree: _generate
