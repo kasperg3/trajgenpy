@@ -1,11 +1,11 @@
-import coverage_planner.core as planner
-from coverage_planner.core import Point_2, Polygon_2
+import coverage_task_generation as planner
+from task_allocation import CoverageProblem, Experiment, Utility
 from flask import Flask, jsonify
 
 def test1():
     # Construct a polygon from a list of points
-    points = [Point_2(0, 0), Point_2(1, 0), Point_2(1, 1), Point_2(0, 1)]
-    polygon = Polygon_2(points)
+    points = [planner.Point_2(0, 0), planner.Point_2(1, 0), planner.Point_2(1, 1), planner.Point_2(0, 1)]
+    polygon = planner.Polygon_2(points)
 
     # Check if the polygon is simple and convex
     print(polygon.is_simple())   # True
@@ -50,18 +50,11 @@ def test2():
 
 
     decomposed_polygons = planner.decompose(outer_poly)
+    print(len(decomposed_polygons))
     segments = []
     for poly in decomposed_polygons:
         segments.extend(planner.generate_sweeps(poly,0.1))
-    print(segments[0].source.x)
-    print(segments[0].target.x)
-
-
-# app = Flask(__name__)
-
-# @app.route('/example', methods=['post'])
-# def example():
-#     return jsonify({'result': 'success'})  # Return a JSON response
+    print(len(segments))
 
 if __name__ == '__main__':
     test1()

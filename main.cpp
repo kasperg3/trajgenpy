@@ -28,7 +28,6 @@ std::string polygon_to_string(const Polygon_2& poly) {
 }
 
 py::list decompose(const PolygonWithHoles& pwh){
-
     std::vector<Polygon_2> decomposedPolygons;
     std::vector<Line_2> cell_dirs;
     double msa;
@@ -37,7 +36,7 @@ py::list decompose(const PolygonWithHoles& pwh){
     polygon_coverage_planning::computeBestBCDFromPolygonWithHoles(pwh, decomposedPolygons, cell_dirs,msa);
     py::list result;
     for(auto poly: decomposedPolygons){
-        std::cout << polygon_to_string(poly) << std::endl;
+        // std::cout << polygon_to_string(poly) << std::endl;
         result.append(poly);
     }
     return result;
@@ -63,7 +62,7 @@ py::list generate_sweeps(const Polygon_2& poly, const double sweep_offset){
     return result; 
 }
 
-PYBIND11_MODULE(core, m) {
+PYBIND11_MODULE(_core, m) {
     m.doc() = R"pbdoc(
         Pybind11 core plugin
         -----------------------
@@ -122,6 +121,9 @@ PYBIND11_MODULE(core, m) {
                 holes.push_back(*it);
             }
             return holes;
+        })
+        .def_property_readonly("boundary",[](const PolygonWithHoles& p) {
+            return p.outer_boundary();
         });
     
     py::class_<Segment_2>(m, "Segment_2")

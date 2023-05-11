@@ -4,14 +4,14 @@ build-backend = "scikit_build_core.build"
 
 
 [project]
-name = "coverage_planner"
+name = "coverage_task_generation"
 version = "0.0.1"
 description="A minimal example package (with pybind11)"
 readme = "README.md"
 authors = [
   { name = "My Name", email = "me@email.com" },
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 4 - Beta",
   "License :: OSI Approved :: MIT License",
@@ -25,11 +25,6 @@ classifiers = [
 
 [project.optional-dependencies]
 test = ["pytest"]
-
-
-[tool.scikit-build]
-wheel.expand-macos-universal-tags = true
-
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -76,7 +71,7 @@ extend-ignore = [
   "PLR",    # Design related pylint codes
   "E501",   # Line too long
 ]
-target-version = "py37"
+target-version = "py310"
 src = ["src"]
 unfixable = [
   "T20",  # Removes print statements
