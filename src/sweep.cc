@@ -78,8 +78,8 @@ bool computeSweep(
         std::cerr << "Failed to calculate final sweep.\n";
         return false;
       }
-      // Do not add super close sweep.
-      if (CGAL::squared_distance(sweep_segment, prev_sweep_segment) < 0.1) {
+      // Do not add a sweep if it is half the offset, because then it has already been covered
+      if (CGAL::squared_distance(sweep_segment, prev_sweep_segment) < offset/2) {
         break;
       }
     }
