@@ -19,6 +19,7 @@
 
 #include "cgal_comm.h"
 
+// #include <ros/assert.h>
 
 namespace polygon_coverage_planning {
 
@@ -58,6 +59,7 @@ bool isStrictlySimple(const PolygonWithHoles& pwh) {
 
 Point_2 projectOnPolygon2(const Polygon_2& poly, const Point_2& p,
                           FT* squared_distance) {
+  // ROS_ASSERT(squared_distance);
 
   // Find the closest edge.
   std::vector<std::pair<FT, EdgeConstIterator>> edge_distances(poly.size());
@@ -124,6 +126,7 @@ FT computeArea(const PolygonWithHoles& pwh) {
 }
 
 void simplifyPolygon(Polygon_2* polygon) {
+  // ROS_ASSERT(polygon);
 
   std::vector<Polygon_2::Vertex_circulator> v_to_erase;
 
@@ -144,6 +147,7 @@ void simplifyPolygon(Polygon_2* polygon) {
 }
 
 void simplifyPolygon(PolygonWithHoles* pwh) {
+  // ROS_ASSERT(pwh);
 
   simplifyPolygon(&pwh->outer_boundary());
 

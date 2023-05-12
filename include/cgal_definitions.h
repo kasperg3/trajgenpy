@@ -17,44 +17,18 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef POLYGON_COVERAGE_GEOMETRY_CGAL_DEFINITIONS_H_
 #define POLYGON_COVERAGE_GEOMETRY_CGAL_DEFINITIONS_H_
 
-#include <CGAL/Arr_linear_traits_2.h>
-#include <CGAL/Arr_segment_traits_2.h>
-#include <CGAL/Arrangement_2.h>
-#include <CGAL/Arrangement_on_surface_2.h>
-#include <CGAL/Boolean_set_operations_2.h>
-#include <CGAL/Cartesian.h>
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/General_polygon_with_holes_2.h>
-#include <CGAL/MP_Float.h>
-#include <CGAL/Partition_traits_2.h>
-#include <CGAL/Polygon_with_holes_2.h>
-#include <CGAL/Quotient.h>
-#include <CGAL/Vector_2.h>
-#include <CGAL/centroid.h>
-#include <CGAL/min_quadrilateral_2.h>
-#include <CGAL/partition_2.h>
-#include <CGAL/property_map.h>
-#include <CGAL/squared_distance_2.h>
-/* #include <CGAL/Aff_transformation_2.h> */
-#include <CGAL/minkowski_sum_2.h>
-#include <CGAL/partition_2.h>
-/* #include <CGAL/Gps_circle_segment_traits_2.h> */
-#include <CGAL/Aff_transformation_2.h>
-#include <CGAL/Polygon_set_2.h>
-#include <CGAL/approximated_offset_2.h>
-#include <CGAL/create_offset_polygons_2.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_with_holes_2.h>
+
 typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 typedef K::FT FT;
 typedef K::Point_2 Point_2;
 typedef K::Point_3 Point_3;
+typedef K::Ray_2 Ray_2;
 typedef K::Vector_2 Vector_2;
 typedef K::Direction_2 Direction_2;
 typedef K::Line_2 Line_2;

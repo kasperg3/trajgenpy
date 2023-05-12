@@ -17,7 +17,6 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef POLYGON_COVERAGE_GEOMETRY_CGAL_COMM_H_
 #define POLYGON_COVERAGE_GEOMETRY_CGAL_COMM_H_
 

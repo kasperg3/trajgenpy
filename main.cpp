@@ -4,7 +4,6 @@
 #include "include/decomposition.h"
 #include "include/sweep.h"
 #include "include/weakly_monotone.h"
-#include "include/CoveragePlanner.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -33,7 +32,7 @@ py::list decompose(const PolygonWithHoles& pwh){
     double msa;
 
     // TODO before calculating BCD, check whether it is a valid polygon with holes and check that the function does not fail
-    polygon_coverage_planning::computeBestBCDFromPolygonWithHoles(pwh, decomposedPolygons, cell_dirs,msa);
+    polygon_coverage_planning::computeBestBCDFromPolygonWithHoles(pwh, &decomposedPolygons);
     py::list result;
     for(auto poly: decomposedPolygons){
         // std::cout << polygon_to_string(poly) << std::endl;
@@ -56,7 +55,7 @@ py::list generate_sweeps(const Polygon_2& poly, const double sweep_offset){
         for(auto segment: sweep)
             result.append(segment);
     } else {
-     // TODO error handling    
+     // TODO error handling
     }
     
     return result; 

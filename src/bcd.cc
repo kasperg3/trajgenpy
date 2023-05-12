@@ -19,9 +19,6 @@
 
 #include <vector>
 
-/* #include <ros/assert.h> */
-/* #include <ros/console.h> */
-
 #include "bcd.h"
 #include "cgal_comm.h"
 
@@ -96,11 +93,11 @@ void processEvent(const PolygonWithHoles& pwh, const VertexConstCirculator& v,
                   std::vector<Point_2>* processed_vertices,
                   std::list<Segment_2>* L, std::list<Polygon_2>* open_polygons,
                   std::vector<Polygon_2>* closed_polygons) {
-  /* ROS_ASSERT(sorted_vertices); */
-  /* ROS_ASSERT(processed_vertices); */
-  /* ROS_ASSERT(L); */
-  /* ROS_ASSERT(open_polygons); */
-  /* ROS_ASSERT(closed_polygons); */
+  // ROS_ASSERT(sorted_vertices);
+  // ROS_ASSERT(processed_vertices);
+  // ROS_ASSERT(L);
+  // ROS_ASSERT(open_polygons);
+  // ROS_ASSERT(closed_polygons);
 
   Polygon_2::Traits::Equal_2 eq_2;
 
@@ -167,8 +164,8 @@ void processEvent(const PolygonWithHoles& pwh, const VertexConstCirculator& v,
     } else {
       // Close two cells, open one.
       // Close lower cell.
-      /* ROS_ASSERT(e_lower_id > 0); */
-      /* ROS_ASSERT(intersections.size() > e_upper_id + 1); */
+      // ROS_ASSERT(e_lower_id > 0);
+      // ROS_ASSERT(intersections.size() > e_upper_id + 1);
       std::list<Polygon_2>::iterator lower_cell =
           std::next(open_polygons->begin(), lower_cell_id);
       lower_cell->push_back(intersections[e_lower_id - 1]);
@@ -313,6 +310,8 @@ void processEvent(const PolygonWithHoles& pwh, const VertexConstCirculator& v,
               if (*it == v) i_v = it;
               if (*it == v_middle) i_v_middle = it;
             }
+            // ROS_ASSERT(i_v != sorted_vertices->end());
+            // ROS_ASSERT(i_v_middle != sorted_vertices->end());
             std::iter_swap(i_v, i_v_middle);
           }
           break;
@@ -321,6 +320,9 @@ void processEvent(const PolygonWithHoles& pwh, const VertexConstCirculator& v,
       if (it == L->end()) {
         VertexConstCirculator v_prev = std::prev(v_middle);
         VertexConstCirculator v_next = std::next(v_middle);
+        // ROS_ASSERT(v_prev->x() != v_next->x());
+        // ROS_ASSERT(v_prev->x() == v_middle->x() ||
+        //            v_next->x() == v_middle->x());
         if (v_prev->x() == v_middle->x())
           v_middle = v_prev;
         else
@@ -346,7 +348,7 @@ void processEvent(const PolygonWithHoles& pwh, const VertexConstCirculator& v,
       }
       edge_id++;
     }
-    /* ROS_ASSERT(old_e_it != L->end()); */
+    // ROS_ASSERT(old_e_it != L->end());
 
     // Update cell with new vertex.
     size_t cell_id = edge_id / 2;
@@ -385,7 +387,7 @@ std::vector<Point_2> getIntersections(const std::list<Segment_2>& L,
         *(intersection++) = *p;
       }
     } else {
-      /* ROS_ERROR_STREAM("No intersection found!"); */
+      // ROS_ERROR_STREAM("No intersection found!");
     }
   }
 

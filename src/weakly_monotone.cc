@@ -59,11 +59,8 @@ std::vector<Direction_2> getAllSweepableEdgeDirections(const Polygon_2& in) {
         });
     if (last != dirs.end()) continue;
     // Check if the polygon is monotone perpendicular to this edge direction.
-		if (isWeaklyMonotone(in, it->supporting_line())) {
+    if (isWeaklyMonotone(in, it->supporting_line()))
       dirs.push_back(it->direction());
-		} else {
-			/* std::cout << "Sweepable dirs: " << it->direction() << "\n"; */
-		}
   }
 
   return dirs;

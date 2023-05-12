@@ -22,62 +22,39 @@
 
 #include "cgal_definitions.h"
 
-namespace polygon_coverage_planning
-{
+namespace polygon_coverage_planning {
 
 // Get all unique polygon edge directions including opposite directions.
-std::vector<Direction_2> findEdgeDirections(const PolygonWithHoles & pwh);
+std::vector<Direction_2> findEdgeDirections(const PolygonWithHoles& pwh);
 
-std::vector<Direction_2> getAllSweepDirections(const Polygon_2 & in);
 // Get all directions that are perpendicular to the edges found with
 // findEdgeDirections.
-std::vector<Direction_2> findPerpEdgeDirections(const PolygonWithHoles & pwh);
+std::vector<Direction_2> findPerpEdgeDirections(const PolygonWithHoles& pwh);
 
 // Find the best edge direction to sweep. The best direction is the direction
 // with the smallest polygon altitude. Returns the smallest altitude.
-double findBestSweepDir(const Polygon_2 & cell, Direction_2 * best_dir = nullptr);
+double findBestSweepDir(const Polygon_2& cell, Direction_2* best_dir = nullptr);
 
-FT computeMSASquared(const Polygon_2 & cell, const Direction_2 & dir);
 // Compute BCDs for every edge direction. Return any with the smallest possible
 // altitude sum.
-bool computeBestBCDFromPolygonWithHoles(
-  const PolygonWithHoles & pwh,
-  std::vector<Polygon_2> & bcd_polygons,
-  std::vector<Line_2> &, double & msa);
-inline bool computeBestBCDFromPolygonWithHoles(const PolygonWithHoles & pwh, double & msa)
-{
-  std::vector<Polygon_2> decomposition;
-  std::vector<Line_2> dirs;
-  return computeBestBCDFromPolygonWithHoles(pwh, decomposition, dirs, msa);
-}
-
-bool computeBCDFromPolygonWithHoles(
-  const PolygonWithHoles & pwh,
-  std::vector<Polygon_2> * bcd_polygons, double & msa,
-  Line_2 & longitudinal_dir);
-bool computeBCDFromPolygonWithHoles1(
-  const PolygonWithHoles & pwh,
-  std::vector<Polygon_2> * bcd_polygons, double & msa,
-  Line_2 & longitudinal_dir);
-
-double computeMSA(const Polygon_2 & cell, const Direction_2 & dir);
+bool computeBestBCDFromPolygonWithHoles(const PolygonWithHoles& pwh,
+                                        std::vector<Polygon_2>* bcd_polygons);
 
 // Compute TCDs for every edge direction. Return any with the smallest possible
 // altitude sum.
+bool computeBestTCDFromPolygonWithHoles(const PolygonWithHoles& pwh,
+                                        std::vector<Polygon_2>* trap_polygons);
 
-enum DecompositionType
-{
+enum DecompositionType {
   kBCD = 0,  // Boustrophedon.
   kTCD       // Trapezoidal.
 };
 
-inline bool checkDecompositionTypeValid(const int type)
-{
+inline bool checkDecompositionTypeValid(const int type) {
   return (type == DecompositionType::kBCD) || (type == DecompositionType::kTCD);
 }
 
-inline std::string getDecompositionTypeName(const DecompositionType & type)
-{
+inline std::string getDecompositionTypeName(const DecompositionType& type) {
   switch (type) {
     case DecompositionType::kBCD:
       return "Boustrophedon Cell Decomposition";
