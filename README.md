@@ -2,21 +2,16 @@
 The polygon_coverage_geometry source files are obtained from https://github.com/ethz-asl/polygon_coverage_planning.
 
 Functions for computing the Boustrophedon Cell Decomposition (BCD) are used by the AreaCoverage-library. The use of the code is covered by GPLv3 license. 
+## Install the requirements
+```sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev```
 
-docker build -t herd-api .    
-docker run -p 5000:5000 herd-api
+```pip install -r requirements.txt```
 
-
-Build the pip wheel:
-pip wheel . -v
-
-or install directly
-pip install . -v
+## Build the pip wheel:
+```pip wheel . -v```
 
 and install the wheel
-pip install somethin.whl -v
+```pip install somethin.whl -v```
 
-mkdir build
-cd build
-cmake ..
-make
+## or install directly
+```pip install . -v```
