@@ -1,7 +1,7 @@
-# Polygon Coverage Planning python bindings
-The polygon_coverage_geometry source files are obtained from https://github.com/ethz-asl/polygon_coverage_planning.
+# Polygon Coverage Planning 
 
-Functions for computing the Boustrophedon Cell Decomposition (BCD) are used by the AreaCoverage-library. The use of the code is covered by GPLv3 license. 
+This repository is based on the c++ implementation of Boustrophedon Cell Decomposition from https://github.com/ethz-asl/polygon_coverage_planning including extentions for further task generation including python bindings. 
+
 ## Install the requirements
 ```sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev```
 
