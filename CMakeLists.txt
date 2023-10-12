@@ -9,8 +9,8 @@ find_package(CGAL REQUIRED)
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 
-# python_add_library(core MODULE main.cpp WITH_SOABI)
-pybind11_add_module(_core main.cpp)
+# python_add_library(core MODULE src/Bindings.cpp WITH_SOABI)
+pybind11_add_module(_core src/Bindings.cpp)
 
 target_link_libraries(_core PRIVATE pybind11::headers ${CGAL_LIBRARIES} pybind11::module)
 target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})

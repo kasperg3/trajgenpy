@@ -72,5 +72,6 @@
         "decomposition.h": "c",
         "forward_list": "cpp",
         "valarray": "cpp"
-    }
+    },
+    "python.analysis.typeCheckingMode": "off"
 }

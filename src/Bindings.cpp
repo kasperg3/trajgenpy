@@ -1,9 +1,9 @@
 
-#include "include/bcd.h"
-#include "include/cgal_comm.h"
-#include "include/decomposition.h"
-#include "include/sweep.h"
-#include "include/weakly_monotone.h"
+#include "bcd.h"
+#include "cgal_comm.h"
+#include "decomposition.h"
+#include "sweep.h"
+#include "weakly_monotone.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>

@@ -1,20 +1,18 @@
 import coverage_task_generation as planner
-from task_allocation import CoverageProblem, Experiment, Utility
-from flask import Flask, jsonify
 
-def test1():
+def test_create_polygon():
     # Construct a polygon from a list of points
     points = [planner.Point_2(0, 0), planner.Point_2(1, 0), planner.Point_2(1, 1), planner.Point_2(0, 1)]
     polygon = planner.Polygon_2(points)
 
     # Check if the polygon is simple and convex
-    print(polygon.is_simple())   # True
-    print(polygon.is_convex())   # True
-
+    assert(polygon.is_simple())   # True
+    assert(polygon.is_convex())   # True
+    
     for vertex in polygon.vertices:
         print(vertex.x, vertex.y)
 
-def test2():
+def test_create_sweeps():
     # create the outer polygon with holes
     outer_boundary = planner.Polygon_2()
     outer_boundary.push_back(planner.Point_2(0, 0))
@@ -48,15 +46,12 @@ def test2():
     polygon2.push_back(planner.Point_2(8, 6))
     poly_list.append(polygon2)
 
-
     decomposed_polygons = planner.decompose(outer_poly)
     print(len(decomposed_polygons))
     segments = []
     for poly in decomposed_polygons:
-        segments.extend(planner.generate_sweeps(poly,0.1))
-    print(len(segments))
-
-if __name__ == '__main__':
-    test1()
-    test2()
-    # app.run(debug=True, host="0.0.0.0", port=5000)
+        if poly.is_convex():        
+            segments.extend(planner.generate_sweeps(poly,0.1))
+        else: 
+            raise Exception("not able to generate a plan for a non convex polygon")
+    assert len(segments)==80

@@ -13,6 +13,7 @@ def query_features(area: shapely.Polygon, tags:dict, crs:str ="EPSG:2197"):
         geometries = ox.features_from_polygon(area, tags=tags)
     except:
         print("Something went wrong while trying to query from OSM")
+        return []
         
     # Convert individual polygons to a MultiPolygon
     multi_polygon = geometries.geometry.unary_union
@@ -52,7 +53,7 @@ def export_trajectory_tasks(boundary:shapely.Polygon, obstacles, features, crs):
     feature_collection = FeatureCollection([boundary_feature, task_feature, obstacles_feature],crs=crs)
 
     # Write the FeatureCollection to a GeoJSON file
-    with open("test.json", "w") as geojson_file:
+    with open("output.json", "w") as geojson_file:
         dump(feature_collection, geojson_file)
     
 
@@ -74,7 +75,7 @@ def main():
     gdf_polygon = gdf_polygon.to_crs("EPSG:2197")
 
     roads = query_features(polygon, {"highway": ["primary", "secondary", "tertiary", "unclassified", "road", "service"]})
-    buildings = query_features(polygon,{"building" : ["industrial", "yes", "storage_tank"]})
+    buildings = query_features(polygon,{"building" : ["all"]})
     coastline = query_features(polygon,{"natural":["coastline"]})
     
     export_trajectory_tasks(gdf_polygon.unary_union, buildings,roads+coastline, crs="EPSG:2197")
