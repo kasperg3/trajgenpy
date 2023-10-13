@@ -1,5 +1,4 @@
-# Polygon Coverage Planning 
-
+# TrajGenPy
 This repository is based on the c++ implementation of Boustrophedon Cell Decomposition from https://github.com/ethz-asl/polygon_coverage_planning including extentions for further task generation including python bindings. 
 
 ## Install the requirements

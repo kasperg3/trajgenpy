@@ -29,15 +29,20 @@ def query_features(area: shapely.Polygon, tags:dict, crs:str ="EPSG:2197"):
     print("Extracted " + str(len(result)) + " features with the tags:" + str(tags))
     return result
 
-def normalize_coordinates():
-    # # Get the minimum x and y coordinate values
-    # min_x = gdf.bounds["minx"].min()
-    # min_y = gdf.bounds["miny"].min()
+# def normalize_coordinates(boundary, geometries = None):
+    
+    # # # Get the minimum x and y coordinate values
+    # min_x = boundary.bounds["minx"].min()
+    # min_y = boundary.bounds["miny"].min()
+    # for geom in geometries:
+    #     # gdf["geometry"] = gdf["geometry"].translate(xoff=-min_x, yoff=-min_y)
+    #     # gdf_polygon["geometry"] = gdf_polygon["geometry"].translate(xoff=-min_x, yoff=-min_y)
+    #     pass
 
-    # # Apply the normalization to the geometry column of the GeoDataFrame
-    # gdf["geometry"] = gdf["geometry"].translate(xoff=-min_x, yoff=-min_y)
-    # gdf_polygon["geometry"] = gdf_polygon["geometry"].translate(xoff=-min_x, yoff=-min_y)
-    pass
+    # # # Apply the normalization to the geometry column of the GeoDataFrame
+    # boundary["geometry"] = boundary["geometry"].translate(xoff=-min_x, yoff=-min_y)
+    # gdf_polygon["geometry"] = boundary["geometry"].translate(xoff=-min_x, yoff=-min_y)
+    # pass
 
 def generate_search_tasks(geometries):
     # normalize_coordinates(geometries)

@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 
 [project]
-name = "coverage_task_generation"
+name = "trajgenpy"
 version = "0.0.1"
 description="A minimal example package (with pybind11)"
 readme = "README.md"

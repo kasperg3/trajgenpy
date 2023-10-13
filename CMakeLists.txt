@@ -23,4 +23,4 @@ target_include_directories(_core PRIVATE "include/")
 file(GLOB SOURCES  "src/*.cc" "src/*.cpp")
 target_sources(_core PRIVATE ${SOURCES})
 
-install(TARGETS _core DESTINATION coverage_task_generation)
+install(TARGETS _core DESTINATION trajgenpy)
