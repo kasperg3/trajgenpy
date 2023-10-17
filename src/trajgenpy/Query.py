@@ -1,12 +1,11 @@
 # TODO implement Task querier which can be used in generator.from functools import partial
+from __future__ import annotations
 
-
+import contextily as ctx
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import networkx as nx
 import osmnx as ox
 import shapely
-import contextily as ctx
 from geojson import Feature, FeatureCollection, dump
 
 
