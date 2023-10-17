@@ -98,7 +98,7 @@ PYBIND11_MODULE(_core, m)
     py::class_<Polygon_2>(m, "Polygon_2")
         .def(py::init<>())
         .def(py::init([](const std::vector<Point_2> &points)
-                      {  return Polygon_2(points.begin(), points.end()); }))
+                      { return Polygon_2(points.begin(), points.end()); }))
         .def("is_simple", &Polygon_2::is_simple)
         .def("is_convex", &Polygon_2::is_convex)
         .def("push_back", &Polygon_2::push_back)
@@ -131,7 +131,7 @@ PYBIND11_MODULE(_core, m)
 
     py::class_<PolygonWithHoles>(m, "Polygon_with_holes_2")
         .def(py::init<>([](const Polygon_2 poly)
-                        {  return PolygonWithHoles(poly); }))
+                        { return PolygonWithHoles(poly); }))
         .def("add_hole", &PolygonWithHoles::add_hole)
         .def_property_readonly("holes", [](PolygonWithHoles &p) -> std::vector<Polygon_2>
                                {

@@ -76,5 +76,5 @@
     "python.analysis.typeCheckingMode": "off",
     "python.analysis.autoImportCompletions": true,
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true
+    "editor.formatOnPaste": true,
 }
