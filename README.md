@@ -1,7 +1,7 @@
 # TrajGenPy
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-[![Build Status](https://github.com/kasperg3/polygon-coverage-planning/actions/workflows/test.yml/badge.svg)](https://github.com/kasperg3/polygon-coverage-planning/actions/workflows/test.yml)
+[![Build Status](https://github.com/kasperg3/trajgenpy/actions/workflows/test.yml/badge.svg)](https://github.com/kasperg3/trajgenpy/actions/workflows/test.yml)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 
 **TrajGenPy** is a Python library that provides functionality for trajectory task generation using the Boustrophedon Cell Decomposition algorithm for coverage generation. It is an extension of the C++ implementation found in the [ethz-asl/polygon_coverage_planning](https://github.com/ethz-asl/polygon_coverage_planning) repository, with additional features and Python bindings.
