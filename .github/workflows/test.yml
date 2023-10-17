@@ -19,9 +19,10 @@ jobs:
       # You can test your matrix by printing the current Python version
       - name: Install dependencies
         run: | 
+          sudo apt update
+          sudo apt -y install libcgal-dev pybind11-dev
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev
       - name: Install library
         run: pip install . --verbose
       - name: Test
