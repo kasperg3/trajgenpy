@@ -1,16 +1,64 @@
 # TrajGenPy
-This repository is based on the c++ implementation of Boustrophedon Cell Decomposition from https://github.com/ethz-asl/polygon_coverage_planning including extentions for further task generation including python bindings. 
 
-## Install the requirements
-```sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev```
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Build Status](https://github.com/kasperg3/polygon-coverage-planning/actions/workflows/test.yml/badge.svg)](https://github.com/kasperg3/polygon-coverage-planning/actions/workflows/test.yml)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 
-```pip install -r requirements.txt```
+**TrajGenPy** is a Python library that provides functionality for trajectory task generation using the Boustrophedon Cell Decomposition algorithm for coverage generation. It is an extension of the C++ implementation found in the [ethz-asl/polygon_coverage_planning](https://github.com/ethz-asl/polygon_coverage_planning) repository, with additional features and Python bindings.
 
-## Build the pip wheel:
-```pip wheel . -v```
+## Features
 
-and install the wheel
-```pip install somethin.whl -v```
+- Boustrophedon Cell Decomposition
+- Task generation for coverage planning
+- Python bindings for easy integration into your Python projects
 
-## or install directly
-```pip install . -v```
+## Installation
+
+Before using TrajGenPy, ensure you have the following requirements installed:
+
+- [libcgal-dev](https://www.cgal.org/) - The Computational Geometry Algorithms Library
+- [pybind11-dev](https://pybind11.readthedocs.io/en/stable/) - A lightweight header-only library for creating Python bindings
+
+You can install these dependencies on Ubuntu using the following commands:
+
+```bash
+sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev
+```
+
+Once you have the dependencies installed, you can install TrajGenPy using `pip`. Simply navigate to your project directory and run:
+
+```bash
+pip install -r requirements.txt
+pip install .
+```
+
+Alternatively, if you want to build a pip wheel, you can do the following:
+
+```bash
+pip wheel . -v
+pip install something.whl -v
+```
+
+## Usage
+
+To use TrajGenPy in your Python project, you can import it as follows:
+
+```python
+import trajgenpy
+```
+
+You can then use the provided functions and classes to perform trajectory generation and task planning based on the Boustrophedon Cell Decomposition algorithm.
+
+## License
+
+This library is released under the [MIT License](LICENSE). Feel free to use, modify, and distribute it in your projects.
+
+## Issues and Contributions
+
+If you encounter any issues or have ideas for improvements, please open an issue on the [GitHub repository](https://github.com/kasperg3/trajgenpy). Contributions in the form of pull requests are also welcome.
+
+## Support
+
+For support and inquiries, you can contact the maintainers of this library at [kaspergrontved@gmail.com](mailto:kaspergrontved@gmail.com).
+
+Thank you for using TrajGenPy! We hope it proves to be a valuable tool for your trajectory generation and task planning needs.
