@@ -49,6 +49,19 @@ import trajgenpy
 
 You can then use the provided functions and classes to perform trajectory generation and task planning based on the Boustrophedon Cell Decomposition algorithm.
 
+## Citation
+If you use TrajGenPy in your work, please cite the following paper:
+
+```bibtex
+@inproceedings{grontved2022icar,
+  title={Decentralized Multi-UAV Trajectory Task Allocation in Search and Rescue Applications},
+  author={Gr{\o}ntved, Kasper Andreas R{\o}mer and Schultz, Ulrik Pagh and Christensen, Anders Lyhne},
+  booktitle={21st International Conference on Advanced Robotics},
+  year={2023},
+  organization={IEEE}
+}
+```
+
 ## License
 
 This library is released under the [MIT License](LICENSE). Feel free to use, modify, and distribute it in your projects.
