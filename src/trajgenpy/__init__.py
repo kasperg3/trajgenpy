@@ -5,5 +5,5 @@ from ._core import (
     __version__,
 )
 
-import Geometry
+from . import Geometry
 __all__ = ["__doc__", "__version__", "Geometry"]
