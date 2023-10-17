@@ -1,3 +1,10 @@
-flask
 pybind11
-
+pytest
+pytest-cov
+geopandas
+matplotlib
+networkx
+osmnx
+shapely
+contextily
+geojson
