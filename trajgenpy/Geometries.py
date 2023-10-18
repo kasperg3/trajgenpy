@@ -2,15 +2,86 @@ import contextily as ctx
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import osmnx as ox
+import pyproj
 import shapely
 from geojson import Feature, FeatureCollection, dump
 
-from trajgenpy import trajgenpy_bindings
+
+class GeoData:
+    def __init__(self, geometry, crs="WGS84"):
+        self.set_geometry(geometry)
+        # self.set_crs(crs)
+        self.crs = crs
+
+    def set_geometry(self, geometry):
+        if not isinstance(
+            geometry, shapely.LineString | shapely.Point | shapely.Polygon
+        ):
+            msg = "Geometry must be a Shapely LineString, Point, or Polygon."
+            raise ValueError(msg)
+        self.geometry = geometry
+
+    def set_crs(self, crs):
+        if not isinstance(crs, str):
+            raise ValueError("New CRS must be a string.")
+
+        if crs != self.crs:
+            # Apply the transformer to the geometry
+            self.convert_to_crs(crs)
+        self.crs = crs
+
+    def convert_to_crs(self, crs):
+        raise NotImplementedError(
+            "This method sould be implemented in the data classes!"
+        )
+
+    def get_shapely_geometry(self):
+        return self.geometry
+
+
+class Trajectory(GeoData):
+    def __init__(self, geometry, crs="WGS84"):
+        super().__init__(geometry, crs)
+
+    def convert_to_crs(self, crs):
+        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
+
+        converted_coords = [
+            transformer.transform(x, y) for x, y in list(self.geometry.coords)
+        ]
+        self.geometry = shapely.LineString(converted_coords)
+
+
+class Point(GeoData):
+    def __init__(self, geometry, crs="WGS84"):
+        super().__init__(geometry, crs)
+
+    def convert_to_crs(self, crs):
+        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
+        x, y = transformer.transform(self.geometry.x, self.geometry.y)
+        self.geometry = shapely.Point(x, y)
+
+
+class Polygon(GeoData):
+    def __init__(self, geometry, crs="WGS84"):
+        super().__init__(geometry, crs)
+
+    def convert_to_crs(self, crs):
+        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
+        # Convert each point in the polygon
+        exterior = [
+            transformer.transform(x, y) for x, y in self.geometry.exterior.coords
+        ]
+        interiors = [
+            [transformer.transform(x, y) for x, y in interior.coords]
+            for interior in self.geometry.interiors
+        ]
+        self.geometry = shapely.Polygon(exterior, interiors)
 
 
 # TODO create wrappers for the functions
 # They should hide the internal types used for interfacing with the c++ implementations
-# TODO implement Task querier which can be used in generator.from functools import partial
+# TODO implement Task querier which can be used in generator.
 def query_features(area: shapely.Polygon, tags: dict, crs: str = "EPSG:2197"):
     try:
         geometries = ox.features_from_polygon(area, tags=tags)
@@ -49,11 +120,6 @@ def query_features(area: shapely.Polygon, tags: dict, crs: str = "EPSG:2197"):
 # boundary["geometry"] = boundary["geometry"].translate(xoff=-min_x, yoff=-min_y)
 # gdf_polygon["geometry"] = boundary["geometry"].translate(xoff=-min_x, yoff=-min_y)
 # pass
-
-
-def generate_search_tasks(geometries):
-    # normalize_coordinates(geometries)
-    pass
 
 
 def to_geodataframe(geometries):
@@ -119,7 +185,11 @@ def main():
             ]
         },
     )
-    buildings = query_features(polygon, {"building": ["all"]})
+
+    buildings = query_features(
+        polygon, {"building": ["industrial", "yes", "storage_tank"]}
+    )
+
     coastline = query_features(polygon, {"natural": ["coastline"]})
 
     export_trajectory_tasks(
@@ -150,5 +220,6 @@ def main():
     plt.show()
 
 
+# Example usage:
 if __name__ == "__main__":
     main()

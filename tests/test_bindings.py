@@ -1,4 +1,5 @@
 import trajgenpy.trajgenpy_bindings as bindings
+import pytest
 
 
 def test_create_polygon():
@@ -62,3 +63,8 @@ def test_create_sweeps():
         else:
             raise Exception("not able to generate a plan for a non convex polygon")
     assert len(segments) == 80
+
+
+# Run the tests
+if __name__ == "__main__":
+    pytest.main(["-v", "-x", "tests/test_bindings.py"])

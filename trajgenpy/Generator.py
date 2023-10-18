@@ -4,3 +4,8 @@
 #   - Environment generator, which can define a search area based on a polygon incasing the area.
 #     The environment should take potental dangerous elements in the terrain into account:
 #       * Powerlines, tall buildings, etc. (This should be configurable)
+
+
+def generate_search_tasks(geometries):
+    # normalize_coordinates(geometries)
+    pass
