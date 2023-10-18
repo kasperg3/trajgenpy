@@ -1,6 +1,3 @@
-# TODO implement Task querier which can be used in generator.from functools import partial
-from __future__ import annotations
-
 import contextily as ctx
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -8,7 +5,12 @@ import osmnx as ox
 import shapely
 from geojson import Feature, FeatureCollection, dump
 
+from trajgenpy import trajgenpy_bindings
 
+
+# TODO create wrappers for the functions
+# They should hide the internal types used for interfacing with the c++ implementations
+# TODO implement Task querier which can be used in generator.from functools import partial
 def query_features(area: shapely.Polygon, tags: dict, crs: str = "EPSG:2197"):
     try:
         geometries = ox.features_from_polygon(area, tags=tags)
@@ -146,3 +148,7 @@ def main():
     #   FeatureCollection og boundary=polygon, tasks=MultiLineString, obstacles=MultiPolygon
 
     plt.show()
+
+
+if __name__ == "__main__":
+    main()

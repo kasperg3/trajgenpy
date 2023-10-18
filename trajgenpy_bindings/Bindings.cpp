@@ -71,7 +71,7 @@ py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset)
     return result;
 }
 
-PYBIND11_MODULE(_core, m)
+PYBIND11_MODULE(trajgenpy_bindings, m)
 {
     m.doc() = R"pbdoc(
         Pybind11 core plugin
