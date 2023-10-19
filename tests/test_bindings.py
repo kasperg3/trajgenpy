@@ -1,5 +1,5 @@
-import trajgenpy.trajgenpy_bindings as bindings
 import pytest
+import trajgenpy.trajgenpy_bindings as bindings
 
 
 def test_create_polygon():
