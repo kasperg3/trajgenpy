@@ -17,6 +17,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 
+[tool.scikit-build]
+cmake.build-type = "Release"
 
 [project.optional-dependencies]
 test = ["pytest"]

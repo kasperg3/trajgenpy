@@ -1,7 +1,11 @@
 import pytest
 from geopandas import GeoDataFrame
 from shapely.geometry import LineString
-from trajgenpy import Geometries  # Import your class from the 'trajectory' module
+from trajgenpy import (
+    Geometries,
+)  # Import your class from the 'trajectory' module
+
+from trajgenpy import Logging as log
 import pytest
 from shapely.geometry import LineString, Point, Polygon
 
@@ -28,7 +32,7 @@ def test_trajectory():
     assert trajectory.crs == "EPSG:3857"
 
     # Check converted geometry
-    converted_coords = list(trajectory.get_shapely_geometry().coords)
+    converted_coords = list(trajectory.get_geometry().coords)
     assert pytest.approx(converted_coords) == [
         (1404896.5016074297, 7496546.845393788),
         (1406275.5274593767, 7497263.139176297),
@@ -52,11 +56,9 @@ def test_point_data():
     assert point_data.crs == "EPSG:3857"
 
     # Check converted geometry
-    converted_coords = point_data.get_shapely_geometry().coords
-    print(converted_coords)
-    assert point_data.get_shapely_geometry() == Point(
-        1405400.1109837785, 7495663.567131141
-    )
+    converted_coords = point_data.get_geometry().coords
+    log.debug(converted_coords)
+    assert point_data.get_geometry() == Point(1405400.1109837785, 7495663.567131141)
 
 
 # Test initialization and conversion for PolygonData class
@@ -81,7 +83,7 @@ def test_polygon_data():
     assert polygon_data.crs == "EPSG:3857"
 
     # Check converted geometry
-    converted_coords = list(polygon_data.get_shapely_geometry().exterior.coords)
+    converted_coords = list(polygon_data.get_geometry().exterior.coords)
     assert pytest.approx(converted_coords) == [
         (1404896.5016074297, 7496546.845393788),
         (1406275.5274593767, 7497263.139176297),

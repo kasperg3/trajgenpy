@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from trajgenpy import Generator, Geometries
 
 # TODO add all the utility functions to generate trajectories

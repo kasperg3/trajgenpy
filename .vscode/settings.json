@@ -71,13 +71,14 @@
         "cgaldefinitions.h": "c",
         "decomposition.h": "c",
         "forward_list": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "cassert": "cpp",
+        "cerrno": "cpp",
+        "cfloat": "cpp",
+        "climits": "cpp"
     },
     "python.analysis.typeCheckingMode": "off",
     "python.analysis.autoImportCompletions": true,
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
-    // "python.autoComplete.extraPaths": [
-    //     "trajgenpy_bindings.cpython-310-x86_64-linux-gnu.so"
-    // ]
 }

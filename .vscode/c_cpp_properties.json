@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/usr/include/python3.10",
-                "${workspaceFolder}/include"
+                "${workspaceFolder}/trajgenpy_bindings",
+                "${workspaceFolder}/trajgenpy_bindings/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

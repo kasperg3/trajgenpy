@@ -56,8 +56,12 @@ py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset)
     // TODO Reuse the directions from the polygon decomposition for performance optimisation
     Direction_2 bestDir;
     polygon_coverage_planning::findBestSweepDir(poly, &bestDir);
+    // Line_2 line(Point_2(0, 0), bestDir);
+    // if (polygon_coverage_planning::isWeaklyMonotone(poly, line))
+    // {
     // Construct the sweep plan
-    std::vector<Segment_2> sweep;
+    std::vector<Segment_2>
+        sweep;
     if (polygon_coverage_planning::computeSweep(poly, sweep_offset, bestDir, false, sweep))
     {
         for (auto segment : sweep)
@@ -67,11 +71,12 @@ py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset)
     {
         // TODO error handling
     }
+    // }
 
     return result;
 }
 
-PYBIND11_MODULE(trajgenpy_bindings, m)
+PYBIND11_MODULE(bindings, m)
 {
     m.doc() = R"pbdoc(
         Pybind11 core plugin
@@ -162,7 +167,8 @@ PYBIND11_MODULE(trajgenpy_bindings, m)
 
             Returns:
                 A list of Polygon_2 objects. 
-    )pbdoc");
+    )pbdoc",
+          py::arg("pwh"), "PolygonWithHoles");
 
     m.def("generate_sweeps", &generate_sweeps, R"pbdoc(
         Generates a sweep pattern from the input polygon.

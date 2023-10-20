@@ -1,5 +1,6 @@
 pybind11
 pytest>=7.4.2
+unittest
 pytest-cov
 geopandas
 matplotlib

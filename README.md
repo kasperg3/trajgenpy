@@ -49,7 +49,18 @@ import trajgenpy
 
 You can then use the provided functions and classes to perform trajectory generation and task planning based on the Boustrophedon Cell Decomposition algorithm.
 
+# Contributing & Development
+
+Install the bindings in dev mode. The bindings have to be reinstalled if any of the trajgenpy_bindings package is changed.
+
+```bash
+pip install -e .
+```
+
+To contribute to trajgenpy, start by forking the repository on GitHub. Create a new branch for your changes, make the necessary code edits, commit your changes with clear messages, and push them to your fork. Create a pull request from your branch to the original repository, describing your changes and addressing any related issues. Once your pull request is approved, a project maintainer will merge it into the main branch.
+
 ## Citation
+
 If you use TrajGenPy in your work, please cite the following paper:
 
 ```bibtex
