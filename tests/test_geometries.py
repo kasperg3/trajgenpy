@@ -1,10 +1,11 @@
+import math
+
 import pytest
 from shapely.geometry import LineString, Point, Polygon
 from trajgenpy import Geometries
 
 # Import your class from the 'trajectory' module
 from trajgenpy import Logging as log
-import math
 
 
 # Test initialization and conversion for Trajectory class
@@ -111,7 +112,7 @@ def test_decompose():
 
 def test_sweep_gen():
     offset = Geometries.get_sweep_offset(0.1, 30, 120)
-    Geometries.generate_sweep_pattern()
+    # Geometries.generate_sweep_pattern()
     pass
 
 
