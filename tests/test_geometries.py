@@ -1,13 +1,10 @@
 import pytest
-from geopandas import GeoDataFrame
-from shapely.geometry import LineString
-from trajgenpy import (
-    Geometries,
-)  # Import your class from the 'trajectory' module
-
-from trajgenpy import Logging as log
-import pytest
 from shapely.geometry import LineString, Point, Polygon
+from trajgenpy import Geometries
+
+# Import your class from the 'trajectory' module
+from trajgenpy import Logging as log
+import math
 
 
 # Test initialization and conversion for Trajectory class
@@ -91,6 +88,31 @@ def test_polygon_data():
         (1405400.1109837785, 7495663.567131141),
         (1404896.5016074297, 7496546.845393788),
     ]
+
+
+def test_valid_inputs():
+    assert math.isclose(Geometries.get_sweep_offset(0.1, 30, 90), 54, abs_tol=1e-3)
+    assert math.isclose(Geometries.get_sweep_offset(0.5, 40, 120), 69.282, abs_tol=1e-3)
+
+
+def test_invalid_overlap():
+    with pytest.raises(ValueError):
+        Geometries.get_sweep_offset(1.2, 30, 90)
+
+
+def test_negative_overlap():
+    with pytest.raises(ValueError):
+        Geometries.get_sweep_offset(-0.1, 30, 90)
+
+
+def test_decompose():
+    pass
+
+
+def test_sweep_gen():
+    offset = Geometries.get_sweep_offset(0.1, 30, 120)
+    Geometries.generate_sweep_pattern()
+    pass
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ from numpy import shape
 import pyproj
 import shapely
 import trajgenpy.bindings as bindings
+import math
 
 
 class GeoData:
@@ -144,14 +145,24 @@ def shapely_polygon_to_cgal(polygon: shapely.Polygon):
     return cgal_polygon
 
 
+def get_sweep_offset(overlap=0.1, height=30, field_of_view=90):
+    if overlap < 0 or overlap > 1:
+        raise ValueError("Overlap percentage has to be a float between 0 and 1!")
+
+    return abs(
+        2 * height * math.tan((field_of_view * math.pi / 180.0) / 2) * (1 - overlap)
+    )
+
+
 def generate_sweep_pattern(
     polygon: shapely.Polygon,
+    sweep_offset,
     direction=None,
     clockwise=True,
     disconnected_sweeps=False,
 ):
     # TODO Make sure that it is monotone in the direction and handle the errors in c++
-    return bindings.generate_sweeps(shapely_polygon_to_cgal(polygon))
+    return bindings.generate_sweeps(shapely_polygon_to_cgal(polygon), sweep_offset)
 
 
 def decompose_polygon(boundary: shapely.Polygon, obstacles: shapely.MultiPolygon):

@@ -1,7 +1,6 @@
 import pytest
-from trajgenpy.Logging import debug
 import trajgenpy.bindings as bindings
-import trajgenpy.Utils
+from trajgenpy.Logging import debug
 
 
 def test_create_polygon():

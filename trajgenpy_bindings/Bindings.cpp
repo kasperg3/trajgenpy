@@ -48,7 +48,7 @@ py::list decompose(const PolygonWithHoles &pwh)
     return result;
 }
 
-py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset)
+py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset, bool clockwise = false)
 {
     py::list result;
     // // Traverse through all polygons
@@ -60,9 +60,8 @@ py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset)
     // if (polygon_coverage_planning::isWeaklyMonotone(poly, line))
     // {
     // Construct the sweep plan
-    std::vector<Segment_2>
-        sweep;
-    if (polygon_coverage_planning::computeSweep(poly, sweep_offset, bestDir, false, sweep))
+    std::vector<Segment_2> sweep;
+    if (polygon_coverage_planning::computeSweep(poly, sweep_offset, bestDir, clockwise, sweep))
     {
         for (auto segment : sweep)
             result.append(segment);
@@ -178,7 +177,8 @@ PYBIND11_MODULE(bindings, m)
 
             Returns:
                 A tuple containing a Segment_2 object.
-    )pbdoc");
+    )pbdoc",
+          py::arg("polygon"), py::arg("sweep_offset"), py::arg("clockwise") = false);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
