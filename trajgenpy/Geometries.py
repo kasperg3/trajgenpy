@@ -1,11 +1,10 @@
-from numpy import shape
+import math
+
 import pyproj
 import shapely
-from sympy import Mul
-import trajgenpy.bindings as bindings
-import math
-import numpy as np
 from shapely.geometry.polygon import orient
+
+import trajgenpy.bindings as bindings
 
 
 class GeoData:
