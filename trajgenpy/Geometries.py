@@ -1,8 +1,11 @@
 from numpy import shape
 import pyproj
 import shapely
+from sympy import Mul
 import trajgenpy.bindings as bindings
 import math
+import numpy as np
+from shapely.geometry.polygon import orient
 
 
 class GeoData:
@@ -138,7 +141,7 @@ def is_convex(polygon: shapely.Polygon):
 def shapely_polygon_to_cgal(polygon: shapely.Polygon):
     # Exctract all the points except the last, as this is the same as the first
     cgal_points = [
-        bindings.Point_2(point.x, point.y) for point in polygon.exterior.coords[:-1]
+        bindings.Point_2(point[0], point[1]) for point in polygon.exterior.coords[:-1]
     ]
     # Create a CGAL Polygon_2 from the list of points
     cgal_polygon = bindings.Polygon_2(cgal_points)
@@ -159,10 +162,28 @@ def generate_sweep_pattern(
     sweep_offset,
     direction=None,
     clockwise=True,
-    disconnected_sweeps=False,
+    disconnected_sweeps=True,
 ):
-    # TODO Make sure that it is monotone in the direction and handle the errors in c++
-    return bindings.generate_sweeps(shapely_polygon_to_cgal(polygon), sweep_offset)
+    # Make sure that the orientation of the polygon is counterclockwise and the interior is clockwise
+    cgal_poly = shapely_polygon_to_cgal(orient(polygon=polygon))
+    segments = bindings.generate_sweeps(cgal_poly, sweep_offset)
+
+    if disconnected_sweeps:
+        lines = [
+            shapely.LineString(
+                [[seg.source.x, seg.source.y], [seg.target.x, seg.target.y]]
+            )
+            for seg in segments
+        ]
+        result = lines
+    else:
+        # Combine all segments into a single LineString
+        combined_line = []
+        for seg in segments:
+            combined_line.append([seg.source.x, seg.source.y])
+            combined_line.append([seg.target.x, seg.target.y])
+        result = [combined_line]
+    return shapely.MultiLineString(result)
 
 
 def decompose_polygon(boundary: shapely.Polygon, obstacles: shapely.MultiPolygon):
