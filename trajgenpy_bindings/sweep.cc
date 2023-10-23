@@ -45,8 +45,7 @@ namespace polygon_coverage_planning
         sweep = Line_2(sorted_pts.front(), dir);
 
         Vector_2 offset_vector = sweep.perpendicular(sorted_pts.front()).to_vector();
-        offset_vector = offset * offset_vector /
-                        std::sqrt(CGAL::to_double(offset_vector.squared_length()));
+        offset_vector = offset * offset_vector / std::sqrt(CGAL::to_double(offset_vector.squared_length()));
         const CGAL::Aff_transformation_2<K> kOffset(CGAL::TRANSLATION, offset_vector);
 
         Segment_2 sweep_segment;
@@ -85,6 +84,8 @@ namespace polygon_coverage_planning
                 if (!has_sweep_segment)
                 {
                     std::cerr << "Failed to calculate final sweep.\n";
+                    // throw std::runtime_error("Failed to calculate final sweep.");
+                    // TODO Determine if it is better to throw an exception or return false
                     return false;
                 }
                 // Do not add a sweep if it is half the offset, because then it has already been covered

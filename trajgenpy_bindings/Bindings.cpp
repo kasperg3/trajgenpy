@@ -48,29 +48,32 @@ py::list decompose(const PolygonWithHoles &pwh)
     return result;
 }
 
-py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset, bool clockwise = false)
+py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset = 50.0, bool clockwise = false)
 {
-    py::list result;
-    // // Traverse through all polygons
-    std::vector<std::vector<Segment_2>> sweeps;
-    // TODO Reuse the directions from the polygon decomposition for performance optimisation
-    Direction_2 bestDir;
-    polygon_coverage_planning::findBestSweepDir(poly, &bestDir);
-    // Line_2 line(Point_2(0, 0), bestDir);
-    // if (polygon_coverage_planning::isWeaklyMonotone(poly, line))
-    // {
-    // Construct the sweep plan
-    std::vector<Segment_2> sweep;
-    if (polygon_coverage_planning::computeSweep(poly, sweep_offset, bestDir, clockwise, sweep))
+    py::list result = py::list();
+
+    if (!poly.is_empty())
     {
-        for (auto segment : sweep)
-            result.append(segment);
+        // // Traverse through all polygons
+        std::vector<std::vector<Segment_2>> sweeps;
+        // TODO Reuse the directions from the polygon decomposition for performance optimisation
+        Direction_2 bestDir;
+        polygon_coverage_planning::findBestSweepDir(poly, &bestDir);
+        // Line_2 line(Point_2(0, 0), bestDir);
+        // if (polygon_coverage_planning::isWeaklyMonotone(poly, line))
+        // {
+        // Construct the sweep plan
+        std::vector<Segment_2> sweep;
+        if (polygon_coverage_planning::computeSweep(poly, sweep_offset, bestDir, clockwise, sweep))
+        {
+            for (auto segment : sweep)
+                result.append(segment);
+        }
+        else
+        {
+            throw std::runtime_error("Sweep computation failed");
+        }
     }
-    else
-    {
-        // TODO error handling
-    }
-    // }
 
     return result;
 }

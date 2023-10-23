@@ -3,9 +3,21 @@ import math
 import pytest
 from shapely.geometry import LineString, Point, Polygon
 from trajgenpy import Geometries
+from shapely.geometry.polygon import orient
 
 # Import your class from the 'trajectory' module
 from trajgenpy import Logging as log
+
+# Plot trajectories:
+# import matplotlib.pyplot as plt
+#     # plot test using matplotlib
+#     # Extract the x and y coordinates for plotting
+#     fig, ax = plt.subplots()
+
+#     for multilinestring in list(test.geoms):
+#         x, y = multilinestring.xy
+#         ax.plot(x, y)
+#     plt.show()
 
 
 # Test initialization and conversion for Trajectory class
@@ -97,23 +109,66 @@ def test_valid_inputs():
 
 
 def test_invalid_overlap():
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Overlap percentage has to be a float between 0 and 1!"
+    ):
         Geometries.get_sweep_offset(1.2, 30, 90)
 
 
 def test_negative_overlap():
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Overlap percentage has to be a float between 0 and 1!"
+    ):
         Geometries.get_sweep_offset(-0.1, 30, 90)
 
 
 def test_decompose():
-    pass
+    poly = Polygon(
+        [
+            (12.620400, 55.687962),
+            (12.632788, 55.691589),
+            (12.637446, 55.687689),
+            (12.624924, 55.683489),
+            (12.628446, 55.686489),  # Add a point
+            (12.625924, 55.688489),  # Add a point
+            (12.630924, 55.689489),  # Add a point
+        ]
+    )
+
+    geo_poly = Geometries.Polygon(poly)
+    geo_poly.convert_to_crs("EPSG:3857")
+
+    Geometries.decompose_polygon(geo_poly.get_geometry(), obstacles=None)
 
 
 def test_sweep_gen():
-    offset = Geometries.get_sweep_offset(0.1, 30, 120)
-    # Geometries.generate_sweep_pattern()
-    pass
+    offset = Geometries.get_sweep_offset(0.1, 30, 90)
+    poly = Polygon(
+        [
+            (12.620400, 55.687962),
+            (12.632788, 55.691589),
+            (12.637446, 55.687689),
+            (12.624924, 55.683489),
+        ]
+    )
+    geo_poly = Geometries.Polygon(poly)
+    geo_poly.convert_to_crs("EPSG:3857")
+
+    test = Geometries.generate_sweep_pattern(
+        geo_poly.get_geometry(), offset, clockwise=False, disconnected_sweeps=False
+    )
+
+
+def test_shapely_polygon_to_cgal():
+    poly = Polygon(
+        [
+            (12.620400, 55.687962),
+            (12.632788, 55.691589),
+            (12.637446, 55.687689),
+            (12.624924, 55.683489),
+        ]
+    )
+    cgal_poly = Geometries.shapely_polygon_to_cgal(poly)
 
 
 if __name__ == "__main__":
