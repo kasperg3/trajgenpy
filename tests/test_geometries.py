@@ -1,7 +1,7 @@
 import math
 
 import pytest
-from shapely.geometry import LineString, Point, Polygon
+from shapely.geometry import LineString, Point, Polygon, MultiLineString
 from trajgenpy import Geometries
 from shapely.geometry.polygon import orient
 
@@ -17,6 +17,18 @@ from trajgenpy import Logging as log
 #     for multilinestring in list(test.geoms):
 #         x, y = multilinestring.xy
 #         ax.plot(x, y)
+#     plt.show()
+
+# Plot polygons:
+# import matplotlib.pyplot as plt
+#     # plot the shapely multi_polygon
+#     fig, ax = plt.subplots()
+#     for polygon in multi_polygon:
+#         x, y = polygon.exterior.xy
+#         ax.plot(x, y)
+
+#     x, y = geo_poly.get_geometry().exterior.xy
+#     ax.plot(x, y)
 #     plt.show()
 
 
@@ -129,16 +141,38 @@ def test_decompose():
             (12.632788, 55.691589),
             (12.637446, 55.687689),
             (12.624924, 55.683489),
-            (12.628446, 55.686489),  # Add a point
-            (12.625924, 55.688489),  # Add a point
-            (12.630924, 55.689489),  # Add a point
+            (12.628446, 55.686489),
+            (12.625924, 55.688489),
+            (12.630924, 55.689489),
         ]
     )
 
     geo_poly = Geometries.Polygon(poly)
     geo_poly.convert_to_crs("EPSG:3857")
 
-    Geometries.decompose_polygon(geo_poly.get_geometry(), obstacles=None)
+    polygon_list = Geometries.decompose_polygon(geo_poly.get_geometry(), obstacles=None)
+
+    # Define the coordinates for the hole (inner polygon)
+
+    hole = Polygon(
+        [
+            (12.629, 55.688),
+            (12.631, 55.689),
+            (12.632, 55.687),
+        ]
+    )
+
+    hole = Geometries.Polygon(hole)
+    hole.convert_to_crs("EPSG:3857")
+
+    polygon_list = Geometries.decompose_polygon(
+        geo_poly.get_geometry(), obstacles=hole.get_geometry()
+    )
+
+    # Assert that the sum of areas of the decomposed polygons is equal to the area of the original polygon
+    total_area = geo_poly.get_geometry().area - hole.get_geometry().area
+    assert pytest.approx(sum([poly.area for poly in polygon_list])) == total_area
+    assert len(polygon_list) > 0
 
 
 def test_sweep_gen():
@@ -157,6 +191,57 @@ def test_sweep_gen():
     test = Geometries.generate_sweep_pattern(
         geo_poly.get_geometry(), offset, clockwise=False, disconnected_sweeps=False
     )
+
+
+def test_sweep_gen_with_obstacle():
+    poly = Polygon(
+        [
+            (12.620400, 55.687962),
+            (12.632788, 55.691589),
+            (12.637446, 55.687689),
+            (12.624924, 55.683489),
+            (12.628446, 55.686489),
+            (12.625924, 55.688489),
+            (12.630924, 55.689489),
+        ]
+    )
+
+    geo_poly = Geometries.Polygon(poly)
+    geo_poly.convert_to_crs("EPSG:3857")
+
+    polygon_list = Geometries.decompose_polygon(geo_poly.get_geometry(), obstacles=None)
+
+    # Define the coordinates for the hole (inner polygon)
+
+    hole = Polygon(
+        [
+            (12.629, 55.688),
+            (12.631, 55.689),
+            (12.632, 55.687),
+        ]
+    )
+
+    hole = Geometries.Polygon(hole)
+    hole.convert_to_crs("EPSG:3857")
+
+    polygon_list = Geometries.decompose_polygon(
+        geo_poly.get_geometry(), obstacles=hole.get_geometry()
+    )
+
+    offset = Geometries.get_sweep_offset(0.1, 30, 90)
+    result = []
+    for decomposed_poly in polygon_list:
+        sweeps = Geometries.generate_sweep_pattern(
+            decomposed_poly, offset, clockwise=False, disconnected_sweeps=False
+        )
+        assert len(sweeps) == 1
+        result.extend(sweeps)
+
+    multi_traj = Geometries.MultiTrajectory(result, "EPSG:3857")
+
+    multi_traj.convert_to_crs("WGS84")
+
+    print(result)
 
 
 def test_shapely_polygon_to_cgal():

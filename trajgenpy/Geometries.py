@@ -1,4 +1,6 @@
+from typing import List
 import math
+from numpy import isin
 
 import pyproj
 import shapely
@@ -14,12 +16,6 @@ class GeoData:
         self.crs = crs
 
     def set_geometry(self, geometry):
-        if not isinstance(
-            geometry,
-            shapely.LineString | shapely.Point | shapely.Polygon | shapely.MultiPolygon,
-        ):
-            msg = "Geometry must be a Shapely LineString, Point, or Polygon."
-            raise ValueError(msg)
         self.geometry = geometry
 
     def set_crs(self, crs):
@@ -36,12 +32,21 @@ class GeoData:
             "This method sould be implemented in the data classes!"
         )
 
+    def is_geometry_of_type(self, geometry, expected_class):
+        if expected_class and not isinstance(geometry, expected_class):
+            msg = f"Geometry must be a {expected_class.__name__}."
+            raise ValueError(msg)
+
     def get_geometry(self):
         return self.geometry
+
+    def __str__(self):
+        return f"Geometry in CRS: {self.crs}\nGeometry: {self.geometry}"
 
 
 class Trajectory(GeoData):
     def __init__(self, geometry, crs="WGS84"):
+        self.is_geometry_of_type(geometry, shapely.LineString)
         super().__init__(geometry, crs)
 
     def convert_to_crs(self, crs):
@@ -53,8 +58,37 @@ class Trajectory(GeoData):
         self.geometry = shapely.LineString(converted_coords)
 
 
+class MultiTrajectory(GeoData):
+    def __init__(
+        self,
+        geometry: shapely.MultiLineString | list[shapely.LineString],
+        crs="WGS84",
+    ):
+        super().__init__(geometry, crs)
+        if isinstance(geometry, list):
+            for line in geometry:
+                self.is_geometry_of_type(line, shapely.LineString)
+
+            super().__init__(shapely.MultiLineString(geometry), crs)
+        else:
+            self.is_geometry_of_type(geometry, shapely.MultiLineString)
+            super().__init__(geometry, crs)
+
+    def convert_to_crs(self, crs):
+        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
+        # Convert the coordinates of each line in the MultiLineString
+        converted_geoms = [
+            [
+                transformer.transform(x, y) for x, y in list(line.coords)
+            ]  # Convert the coordinates of each line in the MultiLineString
+            for line in self.geometry.geoms
+        ]
+        self.geometry = shapely.MultiLineString(converted_geoms)
+
+
 class Point(GeoData):
-    def __init__(self, geometry, crs="WGS84"):
+    def __init__(self, geometry: shapely.Point, crs="WGS84"):
+        self.is_geometry_of_type(geometry, shapely.Point)
         super().__init__(geometry, crs)
 
     def convert_to_crs(self, crs):
@@ -65,6 +99,7 @@ class Point(GeoData):
 
 class Polygon(GeoData):
     def __init__(self, geometry, crs="WGS84"):
+        self.is_geometry_of_type(geometry, shapely.Polygon)
         super().__init__(geometry, crs)
 
     def convert_to_crs(self, crs):
@@ -181,13 +216,26 @@ def generate_sweep_pattern(
         for seg in segments:
             combined_line.append([seg.source.x, seg.source.y])
             combined_line.append([seg.target.x, seg.target.y])
-        result = [combined_line]
-    return shapely.MultiLineString(result)
+        result = [shapely.LineString(combined_line)]
+    return result
 
 
-def decompose_polygon(boundary: shapely.Polygon, obstacles: shapely.MultiPolygon):
-    pwh = bindings.PolygonWithHoles(shapely_polygon_to_cgal(boundary))
+def decompose_polygon(
+    boundary: shapely.Polygon, obstacles: shapely.MultiPolygon | shapely.Polygon = None
+):
+    if obstacles is not None:
+        if isinstance(obstacles, shapely.Polygon):
+            obstacles = shapely.MultiPolygon([obstacles])
+        elif not isinstance(obstacles, shapely.MultiPolygon):
+            raise ValueError("Obstacles must be a Shapely MultiPolygon.")
 
-    for poly in obstacles:
-        pwh.add_hole(shapely_polygon_to_cgal(poly))
-    return bindings.decompose(pwh)
+    pwh = bindings.Polygon_with_holes_2(shapely_polygon_to_cgal(boundary))
+    if obstacles is not None:
+        for poly in obstacles.geoms:
+            pwh.add_hole(shapely_polygon_to_cgal(poly))
+
+    decompose_polygons = bindings.decompose(pwh)
+    return [
+        shapely.Polygon([(vertex.x, vertex.y) for vertex in polygon])
+        for polygon in decompose_polygons
+    ]
