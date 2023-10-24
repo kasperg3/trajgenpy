@@ -193,6 +193,7 @@ def test_sweep_gen():
     test = Geometries.generate_sweep_pattern(
         geo_poly.get_geometry(), offset, clockwise=False, connect_sweeps=True
     )
+    assert len(test) == 1
 
 
 def test_sweep_gen_with_obstacle():
@@ -267,6 +268,7 @@ def test_shapely_polygon_to_cgal():
         ]
     )
     cgal_poly = Geometries.shapely_polygon_to_cgal(poly)
+    assert cgal_poly is not None
 
 
 if __name__ == "__main__":
