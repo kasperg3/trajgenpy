@@ -7,6 +7,7 @@ from trajgenpy import Geometries
 # Import your class from the 'trajectory' module
 from trajgenpy import Logging as log
 
+# TESTs
 # Plot trajectories:
 # import matplotlib.pyplot as plt
 #     # plot test using matplotlib
