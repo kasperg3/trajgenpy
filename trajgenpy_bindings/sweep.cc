@@ -26,6 +26,7 @@ namespace polygon_coverage_planning
         const Polygon_2 &in,
         const FT offset, const Direction_2 &dir,
         bool counter_clockwise,
+        bool connect_sweeps,
         std::vector<Segment_2> &sweep_segments)
     {
         std::vector<Point_2> waypoints;
@@ -33,11 +34,17 @@ namespace polygon_coverage_planning
         const FT kSqOffset = offset * offset;
 
         // Assertions.
-        // TODO(rikba): Check monotone perpendicular to dir.
+        Line_2 line(Point_2(0, 0), dir);
+        if (!polygon_coverage_planning::isWeaklyMonotone(in, line))
+        {
+            throw std::runtime_error("Polygon is not weakly monotone.");
+        }
         if (!in.is_counterclockwise_oriented())
         {
-            return false;
+            throw std::runtime_error("Outer polygon is not counterclockwise oriented.");
         }
+        // Only define the visibility graph if we need to connect the sweeps
+        visibility_graph::VisibilityGraph visibility_graph(in);
 
         // Find start sweep.
         Line_2 sweep(Point_2(0.0, 0.0), dir);
@@ -57,7 +64,23 @@ namespace polygon_coverage_planning
             {
                 sweep_segment = sweep_segment.opposite();
             }
-            //
+
+            if (connect_sweeps)
+            {
+                // connect to previous sweep
+                if (!sweep_segments.empty())
+                {
+                    std::vector<Point_2> shortest_path;
+                    if (!calculateShortestPath(visibility_graph, waypoints.back(), sweep_segment.source(), &shortest_path))
+                        return false;
+                    for (std::vector<Point_2>::iterator it = std::next(shortest_path.begin());
+                         it != std::prev(shortest_path.end()); ++it)
+                    {
+                        waypoints.push_back(*it);
+                    }
+                }
+            }
+
             // Traverse sweep.
             waypoints.push_back(sweep_segment.source());
             if (!sweep_segment.is_degenerate())
@@ -69,24 +92,16 @@ namespace polygon_coverage_planning
             // Offset sweep.
             sweep = sweep.transform(kOffset);
             // Find new sweep segment.
-            Segment_2 prev_sweep_segment =
-                counter_clockwise ? sweep_segment.opposite() : sweep_segment;
+            Segment_2 prev_sweep_segment = counter_clockwise ? sweep_segment.opposite() : sweep_segment;
             has_sweep_segment = findSweepSegment(in, sweep, &sweep_segment);
             // Add a final ssweep.
-            if (!has_sweep_segment &&
-                !((!waypoints.empty() &&
-                   *std::prev(waypoints.end(), 1) == sorted_pts.back()) ||
-                  (waypoints.size() > 1 &&
-                   *std::prev(waypoints.end(), 2) == sorted_pts.back())))
+            if (!has_sweep_segment && !((!waypoints.empty() && *std::prev(waypoints.end(), 1) == sorted_pts.back()) || (waypoints.size() > 1 && *std::prev(waypoints.end(), 2) == sorted_pts.back())))
             {
                 sweep = Line_2(sorted_pts.back(), dir);
                 has_sweep_segment = findSweepSegment(in, sweep, &sweep_segment);
                 if (!has_sweep_segment)
                 {
-                    std::cerr << "Failed to calculate final sweep.\n";
-                    // throw std::runtime_error("Failed to calculate final sweep.");
-                    // TODO Determine if it is better to throw an exception or return false
-                    return false;
+                    throw std::runtime_error("Failed to calculate final sweep.");
                 }
                 // Do not add a sweep if it is half the offset, because then it has already been covered
                 if (CGAL::squared_distance(sweep_segment, prev_sweep_segment) < offset / 2)
@@ -97,19 +112,16 @@ namespace polygon_coverage_planning
             // Check observability of vertices between sweeps.
             if (has_sweep_segment)
             {
-                std::vector<Point_2>::const_iterator unobservable_point =
-                    sorted_pts.end();
-                checkObservability(
-                    prev_sweep_segment, sweep_segment, sorted_pts,
-                    kSqOffset, &unobservable_point);
+                std::vector<Point_2>::const_iterator unobservable_point = sorted_pts.end();
+                checkObservability(prev_sweep_segment, sweep_segment, sorted_pts, kSqOffset, &unobservable_point);
                 if (unobservable_point != sorted_pts.end())
                 {
                     sweep = Line_2(*unobservable_point, dir);
                     has_sweep_segment = findSweepSegment(in, sweep, &sweep_segment);
                     if (!has_sweep_segment)
                     {
-                        std::cerr << "Failed to calculate extra sweep at point: " << *unobservable_point << std::endl;
-                        return false;
+                        // throw
+                        throw std::runtime_error("Failed to calculate extra sweep.");
                     }
                 }
             }
@@ -220,6 +232,46 @@ namespace polygon_coverage_planning
             });
 
         return intersections;
+    }
+
+    bool calculateShortestPath(
+        const visibility_graph::VisibilityGraph &visibility_graph,
+        const Point_2 &start, const Point_2 &goal,
+        std::vector<Point_2> *shortest_path)
+    {
+        assert(shortest_path);
+        shortest_path->clear();
+
+        Polygon_2 start_visibility, goal_visibility;
+        if (!computeVisibilityPolygon(visibility_graph.getPolygon(), start, &start_visibility))
+        {
+            std::cout << "Cannot compute visibility polygon from start query point "
+                      << start
+                      << " in polygon: " << visibility_graph.getPolygon() << std::endl;
+            return false;
+        }
+        if (!computeVisibilityPolygon(visibility_graph.getPolygon(), goal, &goal_visibility))
+        {
+            std::cout << "Cannot compute visibility polygon from goal query point "
+                      << goal
+                      << " in polygon: " << visibility_graph.getPolygon() << std::endl;
+            return false;
+        }
+        if (!visibility_graph.solve(start, start_visibility, goal, goal_visibility, shortest_path))
+        {
+            std::cout << "Cannot compute shortest path from "
+                      << start << " to " << goal
+                      << " in polygon: " << visibility_graph.getPolygon() << std::endl;
+            return false;
+        }
+
+        if (shortest_path->size() < 2)
+        {
+            std::cout << "Shortest path too short." << std::endl;
+            return false;
+        }
+
+        return true;
     }
 
 } // namespace polygon_coverage_planning

@@ -24,10 +24,10 @@ class GeoData:
 
         if crs != self.crs:
             # Apply the transformer to the geometry
-            self.convert_to_crs(crs)
+            self._convert_to_crs(crs)
         self.crs = crs
 
-    def convert_to_crs(self, crs):
+    def _convert_to_crs(self, crs):
         raise NotImplementedError(
             "This method sould be implemented in the data classes!"
         )
@@ -49,7 +49,7 @@ class Trajectory(GeoData):
         self.is_geometry_of_type(geometry, shapely.LineString)
         super().__init__(geometry, crs)
 
-    def convert_to_crs(self, crs):
+    def _convert_to_crs(self, crs):
         transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
 
         converted_coords = [
@@ -74,7 +74,7 @@ class MultiTrajectory(GeoData):
             self.is_geometry_of_type(geometry, shapely.MultiLineString)
             super().__init__(geometry, crs)
 
-    def convert_to_crs(self, crs):
+    def _convert_to_crs(self, crs):
         transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
         # Convert the coordinates of each line in the MultiLineString
         converted_geoms = [
@@ -91,7 +91,7 @@ class Point(GeoData):
         self.is_geometry_of_type(geometry, shapely.Point)
         super().__init__(geometry, crs)
 
-    def convert_to_crs(self, crs):
+    def _convert_to_crs(self, crs):
         transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
         x, y = transformer.transform(self.geometry.x, self.geometry.y)
         self.geometry = shapely.Point(x, y)
@@ -102,7 +102,7 @@ class Polygon(GeoData):
         self.is_geometry_of_type(geometry, shapely.Polygon)
         super().__init__(geometry, crs)
 
-    def convert_to_crs(self, crs):
+    def _convert_to_crs(self, crs):
         transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
         # Convert each point in the polygon
         exterior = [
@@ -196,13 +196,22 @@ def generate_sweep_pattern(
     sweep_offset,
     direction=None,
     clockwise=True,
-    disconnected_sweeps=True,
+    connect_sweeps=False,
 ):
     # Make sure that the orientation of the polygon is counterclockwise and the interior is clockwise
     cgal_poly = shapely_polygon_to_cgal(orient(polygon=polygon))
-    segments = bindings.generate_sweeps(cgal_poly, sweep_offset)
+    segments = bindings.generate_sweeps(
+        cgal_poly, sweep_offset, clockwise, connect_sweeps
+    )
 
-    if disconnected_sweeps:
+    if connect_sweeps:
+        # Combine all segments into a single LineString
+        combined_line = []
+        for seg in segments:
+            combined_line.append([seg.source.x, seg.source.y])
+            combined_line.append([seg.target.x, seg.target.y])
+        result = [shapely.LineString(combined_line)]
+    else:
         lines = [
             shapely.LineString(
                 [[seg.source.x, seg.source.y], [seg.target.x, seg.target.y]]
@@ -210,13 +219,7 @@ def generate_sweep_pattern(
             for seg in segments
         ]
         result = lines
-    else:
-        # Combine all segments into a single LineString
-        combined_line = []
-        for seg in segments:
-            combined_line.append([seg.source.x, seg.source.y])
-            combined_line.append([seg.target.x, seg.target.y])
-        result = [shapely.LineString(combined_line)]
+
     return result
 
 
