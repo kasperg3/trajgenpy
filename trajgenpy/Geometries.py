@@ -1,6 +1,4 @@
-from typing import List
 import math
-from numpy import isin
 
 import pyproj
 import shapely
@@ -20,7 +18,8 @@ class GeoData:
 
     def set_crs(self, crs):
         if not isinstance(crs, str):
-            raise ValueError("New CRS must be a string.")
+            msg = "New CRS must be a string."
+            raise ValueError(msg)
 
         if crs != self.crs:
             # Apply the transformer to the geometry
@@ -28,9 +27,8 @@ class GeoData:
         self.crs = crs
 
     def _convert_to_crs(self, crs):
-        raise NotImplementedError(
-            "This method sould be implemented in the data classes!"
-        )
+        msg = "This method sould be implemented in the data classes!"
+        raise NotImplementedError(msg)
 
     def is_geometry_of_type(self, geometry, expected_class):
         if expected_class and not isinstance(geometry, expected_class):
@@ -178,13 +176,13 @@ def shapely_polygon_to_cgal(polygon: shapely.Polygon):
         bindings.Point_2(point[0], point[1]) for point in polygon.exterior.coords[:-1]
     ]
     # Create a CGAL Polygon_2 from the list of points
-    cgal_polygon = bindings.Polygon_2(cgal_points)
-    return cgal_polygon
+    return bindings.Polygon_2(cgal_points)
 
 
 def get_sweep_offset(overlap=0.1, height=30, field_of_view=90):
     if overlap < 0 or overlap > 1:
-        raise ValueError("Overlap percentage has to be a float between 0 and 1!")
+        msg = "Overlap percentage has to be a float between 0 and 1!"
+        raise ValueError(msg)
 
     return abs(
         2 * height * math.tan((field_of_view * math.pi / 180.0) / 2) * (1 - overlap)
@@ -194,7 +192,6 @@ def get_sweep_offset(overlap=0.1, height=30, field_of_view=90):
 def generate_sweep_pattern(
     polygon: shapely.Polygon,
     sweep_offset,
-    direction=None,
     clockwise=True,
     connect_sweeps=False,
 ):
@@ -230,7 +227,8 @@ def decompose_polygon(
         if isinstance(obstacles, shapely.Polygon):
             obstacles = shapely.MultiPolygon([obstacles])
         elif not isinstance(obstacles, shapely.MultiPolygon):
-            raise ValueError("Obstacles must be a Shapely MultiPolygon.")
+            msg = "Obstacles must be a Shapely MultiPolygon."
+            raise ValueError(msg)
 
     pwh = bindings.Polygon_with_holes_2(shapely_polygon_to_cgal(boundary))
     if obstacles is not None:
