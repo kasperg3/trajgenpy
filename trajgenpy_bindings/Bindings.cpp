@@ -48,7 +48,7 @@ py::list decompose(const PolygonWithHoles &pwh)
     return result;
 }
 
-py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset = 50.0, bool clockwise = false)
+py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset = 50.0, bool clockwise = false, bool connect_sweeps = false)
 {
     py::list result = py::list();
 
@@ -59,12 +59,10 @@ py::list generate_sweeps(const Polygon_2 &poly, const double sweep_offset = 50.0
         // TODO Reuse the directions from the polygon decomposition for performance optimisation
         Direction_2 bestDir;
         polygon_coverage_planning::findBestSweepDir(poly, &bestDir);
-        // Line_2 line(Point_2(0, 0), bestDir);
-        // if (polygon_coverage_planning::isWeaklyMonotone(poly, line))
-        // {
+
         // Construct the sweep plan
         std::vector<Segment_2> sweep;
-        if (polygon_coverage_planning::computeSweep(poly, sweep_offset, bestDir, clockwise, sweep))
+        if (polygon_coverage_planning::computeSweep(poly, sweep_offset, bestDir, !clockwise, connect_sweeps, sweep))
         {
             for (auto segment : sweep)
                 result.append(segment);
@@ -181,7 +179,7 @@ PYBIND11_MODULE(bindings, m)
             Returns:
                 A tuple containing a Segment_2 object.
     )pbdoc",
-          py::arg("polygon"), py::arg("sweep_offset"), py::arg("clockwise") = false);
+          py::arg("polygon"), py::arg("sweep_offset"), py::arg("clockwise") = false, py::arg("connect_sweeps") = false);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

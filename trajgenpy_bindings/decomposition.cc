@@ -112,14 +112,13 @@ namespace polygon_coverage_planning
     bool computeBestBCDFromPolygonWithHoles(const PolygonWithHoles &pwh,
                                             std::vector<Polygon_2> *bcd_polygons)
     {
-        // ROS_ASSERT(bcd_polygons);
+        assert(bcd_polygons);
         bcd_polygons->clear();
         double min_altitude_sum = std::numeric_limits<double>::max();
 
         // Get all possible decomposition directions.
         std::vector<Direction_2> directions = findPerpEdgeDirections(pwh);
-        // ROS_DEBUG("Number of perpendicular edge directions: %d", directions.size());
-
+        std::cout << "Number of perpendicular edge directions: " << directions.size() << std::endl;
         // For all possible rotations:
         for (const auto &dir : directions)
         {

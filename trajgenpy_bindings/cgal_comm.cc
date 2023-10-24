@@ -19,8 +19,7 @@
 
 #include "cgal_comm.h"
 
-// #include <ros/assert.h>
-
+#include <cassert>
 namespace polygon_coverage_planning
 {
 
@@ -70,8 +69,7 @@ namespace polygon_coverage_planning
     Point_2 projectOnPolygon2(const Polygon_2 &poly, const Point_2 &p,
                               FT *squared_distance)
     {
-        // ROS_ASSERT(squared_distance);
-
+        assert(squared_distance);
         // Find the closest edge.
         std::vector<std::pair<FT, EdgeConstIterator>> edge_distances(poly.size());
         std::vector<std::pair<FT, EdgeConstIterator>>::iterator dit =
@@ -145,9 +143,9 @@ namespace polygon_coverage_planning
 
     void simplifyPolygon(Polygon_2 *polygon)
     {
-        // ROS_ASSERT(polygon);
-
-        std::vector<Polygon_2::Vertex_circulator> v_to_erase;
+        assert(polygon);
+        std::vector<Polygon_2::Vertex_circulator>
+            v_to_erase;
 
         Polygon_2::Vertex_circulator vc = polygon->vertices_circulator();
         // Find collinear vertices.
@@ -170,8 +168,7 @@ namespace polygon_coverage_planning
 
     void simplifyPolygon(PolygonWithHoles *pwh)
     {
-        // ROS_ASSERT(pwh);
-
+        assert(pwh);
         simplifyPolygon(&pwh->outer_boundary());
 
         for (PolygonWithHoles::Hole_iterator hi = pwh->holes_begin();

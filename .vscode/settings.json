@@ -75,7 +75,8 @@
         "cassert": "cpp",
         "cerrno": "cpp",
         "cfloat": "cpp",
-        "climits": "cpp"
+        "climits": "cpp",
+        "shared_mutex": "cpp"
     },
     "python.analysis.typeCheckingMode": "off",
     "python.analysis.autoImportCompletions": true,
