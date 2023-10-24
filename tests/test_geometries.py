@@ -1,11 +1,8 @@
 import math
-from matplotlib import pyplot as plt
 
 import pytest
-from shapely.geometry import LineString, Point, Polygon, MultiLineString
-import shapely.plotting as shapelyplt
+from shapely.geometry import LineString, Point, Polygon
 from trajgenpy import Geometries
-from shapely.geometry.polygon import orient
 
 # Import your class from the 'trajectory' module
 from trajgenpy import Logging as log
