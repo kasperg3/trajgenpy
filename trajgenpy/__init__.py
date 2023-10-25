@@ -1,6 +1,3 @@
-from trajgenpy import Generator, Geometries
+from trajgenpy import Geometries, Query, Utils
 
-# TODO add all the utility functions to generate trajectories
-from trajgenpy.Geometries import Point, Polygon, Trajectory
-
-__all__ = ["__doc__", "__version__", "Geometries"]
+__all__ = ["__doc__", "__version__", "Geometries", "Query", "Utils"]

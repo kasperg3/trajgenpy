@@ -118,7 +118,7 @@ namespace polygon_coverage_planning
 
         // Get all possible decomposition directions.
         std::vector<Direction_2> directions = findPerpEdgeDirections(pwh);
-        std::cout << "Number of perpendicular edge directions: " << directions.size() << std::endl;
+        // std::cout << "Number of perpendicular edge directions: " << directions.size() << std::endl;
         // For all possible rotations:
         for (const auto &dir : directions)
         {
