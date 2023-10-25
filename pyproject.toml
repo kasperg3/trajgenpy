@@ -5,7 +5,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "trajgenpy"
-version = "0.0.1"
+version = "0.1.1"
 description = "A minimal example package (with pybind11)"
 readme = "README.md"
 authors = [{ name = "My Name", email = "me@email.com" }]
