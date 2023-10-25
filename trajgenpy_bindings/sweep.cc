@@ -73,9 +73,10 @@ namespace polygon_coverage_planning
                     std::vector<Point_2> shortest_path;
                     if (!calculateShortestPath(visibility_graph, waypoints.back(), sweep_segment.source(), &shortest_path))
                         return false;
-                    for (std::vector<Point_2>::iterator it = std::next(shortest_path.begin());
-                         it != std::prev(shortest_path.end()); ++it)
+                    // Create segments for all points except the first and last one.
+                    for (std::vector<Point_2>::iterator it = std::next(shortest_path.begin()); it != std::prev(shortest_path.end()); ++it)
                     {
+                        sweep_segments.push_back(Segment_2(*std::prev(it), *it));
                         waypoints.push_back(*it);
                     }
                 }

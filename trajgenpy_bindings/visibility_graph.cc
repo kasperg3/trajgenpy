@@ -57,9 +57,9 @@ namespace polygon_coverage_planning
                     return false;
                 }
             }
-            std::cout << "Created visibility graph with "
-                      << graph_.size() << " nodes and " << edge_properties_.size()
-                      << " edges." << std::endl;
+            // std::cout << "Created visibility graph with "
+            //           << graph_.size() << " nodes and " << edge_properties_.size()
+            //           << " edges." << std::endl;
 
             return true;
         }

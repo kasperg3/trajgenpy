@@ -2,10 +2,12 @@ import math
 
 import pytest
 from shapely.geometry import LineString, Point, Polygon
-from trajgenpy import Geometries
+from trajgenpy import Geometries, Logging
+
+log = Logging.get_logger()
 
 # Import your class from the 'trajectory' module
-from trajgenpy import Logging as log
+
 
 # TESTs
 # Plot trajectories:
@@ -42,7 +44,7 @@ def test_trajectory():
             (12.624924, 55.683489),
         ]
     )
-    trajectory = Geometries.Trajectory(linestring)
+    trajectory = Geometries.GeoTrajectory(linestring)
 
     # Check initial CRS
     assert trajectory.crs == "WGS84"
@@ -66,7 +68,7 @@ def test_trajectory():
 # Test initialization and conversion for PointData class
 def test_point_data():
     point = Point(12.624924, 55.683489)
-    point_data = Geometries.Point(point)
+    point_data = Geometries.GeoPoint(point)
 
     # Check initial CRS
     assert point_data.crs == "WGS84"
@@ -78,8 +80,6 @@ def test_point_data():
     assert point_data.crs == "EPSG:3857"
 
     # Check converted geometry
-    converted_coords = point_data.get_geometry().coords
-    log.debug(converted_coords)
     assert point_data.get_geometry() == Point(1405400.1109837785, 7495663.567131141)
 
 
@@ -93,7 +93,7 @@ def test_polygon_data():
             (12.624924, 55.683489),
         ]
     )
-    polygon_data = Geometries.Polygon(polygon)
+    polygon_data = Geometries.GeoPolygon(polygon)
 
     # Check initial CRS
     assert polygon_data.crs == "WGS84"
@@ -147,7 +147,7 @@ def test_decompose():
         ]
     )
 
-    geo_poly = Geometries.Polygon(poly)
+    geo_poly = Geometries.GeoPolygon(poly)
     geo_poly.set_crs("EPSG:3857")
 
     polygon_list = Geometries.decompose_polygon(geo_poly.get_geometry(), obstacles=None)
@@ -162,7 +162,7 @@ def test_decompose():
         ]
     )
 
-    hole = Geometries.Polygon(hole)
+    hole = Geometries.GeoPolygon(hole)
     hole.set_crs("EPSG:3857")
 
     polygon_list = Geometries.decompose_polygon(
@@ -185,7 +185,7 @@ def test_sweep_gen():
             (12.624924, 55.683489),
         ]
     )
-    geo_poly = Geometries.Polygon(poly)
+    geo_poly = Geometries.GeoPolygon(poly)
     geo_poly.set_crs("EPSG:3857")
 
     test = Geometries.generate_sweep_pattern(
@@ -207,7 +207,7 @@ def test_sweep_gen_with_obstacle():
         ]
     )
 
-    geo_poly = Geometries.Polygon(poly)
+    geo_poly = Geometries.GeoPolygon(poly)
     geo_poly.set_crs("EPSG:3857")
 
     polygon_list = Geometries.decompose_polygon(geo_poly.get_geometry(), obstacles=None)
@@ -222,7 +222,7 @@ def test_sweep_gen_with_obstacle():
         ]
     )
 
-    hole = Geometries.Polygon(hole)
+    hole = Geometries.GeoPolygon(hole)
     hole.set_crs("EPSG:3857")
 
     polygon_list = Geometries.decompose_polygon(

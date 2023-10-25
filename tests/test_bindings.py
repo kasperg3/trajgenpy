@@ -1,6 +1,8 @@
 import pytest
 import trajgenpy.bindings as bindings
-from trajgenpy.Logging import debug
+import trajgenpy.Logging
+
+log = trajgenpy.Logging.get_logger()
 
 
 def test_create_polygon():
@@ -18,7 +20,7 @@ def test_create_polygon():
     assert polygon.is_convex()  # True
 
     for vertex in polygon.vertices:
-        debug(vertex.x, vertex.y)
+        log.debug(vertex.x, vertex.y)
 
 
 def test_create_sweeps():
@@ -56,7 +58,7 @@ def test_create_sweeps():
     poly_list.append(polygon2)
 
     decomposed_polygons = bindings.decompose(outer_poly)
-    debug(len(decomposed_polygons))
+    log.debug(len(decomposed_polygons))
     segments = []
     for poly in decomposed_polygons:
         if poly.is_convex():
