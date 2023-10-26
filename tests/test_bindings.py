@@ -57,7 +57,8 @@ def test_create_sweeps():
         if poly.is_convex():
             segments.extend(bindings.generate_sweeps(poly, 0.1))
         else:
-            raise Exception("not able to generate a plan for a non convex polygon")
+            msg = "not able to generate a plan for a non convex polygon"
+            raise Exception(msg)
     assert len(segments) == 80
 
 
