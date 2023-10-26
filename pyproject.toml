@@ -9,7 +9,7 @@ version = "0.1.1"
 description = "A minimal example package (with pybind11)"
 readme = "README.md"
 authors = [{ name = "My Name", email = "me@email.com" }]
-requires-python = ">=3.10"
+requires-python = ">=3.7"
 classifiers = [
     "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
