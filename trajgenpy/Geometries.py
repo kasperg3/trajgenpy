@@ -1,4 +1,5 @@
 import math
+import geojson
 
 import pyproj
 import shapely
@@ -25,6 +26,7 @@ class GeoData:
             # Apply the transformer to the geometry
             self._convert_to_crs(crs)
         self.crs = crs
+        return self
 
     def _convert_to_crs(self, crs):  # noqa: ARG002
         msg = "_convert_to_crs(crs) sould be implemented in the data classes!"
@@ -42,7 +44,10 @@ class GeoData:
         return f"Geometry in CRS: {self.crs}\nGeometry: {self.geometry}"
 
     def __geo_interface__(self):
-        return self.geometry.__geo_interface__()
+        return self.geometry.__geo_interface__
+
+    def to_geojson(self, id=None):
+        return geojson.Feature(id, self.geometry)
 
 
 class GeoTrajectory(GeoData):

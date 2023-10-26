@@ -230,7 +230,6 @@ def test_sweep_gen_with_obstacle():
     )
 
     offset = Geometries.get_sweep_offset(0.1, 30, 90)
-    result = []
     for decomposed_poly in polygon_list:
         sweeps_connected = Geometries.generate_sweep_pattern(
             decomposed_poly, offset, clockwise=True, connect_sweeps=True
@@ -241,19 +240,6 @@ def test_sweep_gen_with_obstacle():
             decomposed_poly, offset, clockwise=True, connect_sweeps=False
         )
         assert len(sweeps_disconnected) != 1
-
-    ## Plotting
-    #     result.extend(sweeps_disconnected)
-    # multi_traj = Geometries.MultiTrajectory(result, "EPSG:3857")
-
-    # multi_traj.set_crs("WGS84")
-    # geo_poly.set_crs("WGS84")
-    # hole.set_crs("WGS84")
-    # shapelyplt.plot_polygon(geo_poly.get_geometry())
-    # shapelyplt.plot_polygon(hole.get_geometry())
-    # shapelyplt.plot_line(multi_traj.get_geometry())
-
-    # plt.show()
 
 
 def test_shapely_polygon_to_cgal():

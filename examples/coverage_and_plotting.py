@@ -55,7 +55,7 @@ def custom_example():
         )
 
         # Plotting
-        result.extend(sweeps_connected)
+        result.extend(sweeps_disconnected)
     multi_traj = Geometries.GeoMultiTrajectory(result, "EPSG:3857")
 
     # Convert the geometry back to WGS84(geodesic)

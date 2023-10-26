@@ -1,8 +1,12 @@
+import geojson
 import matplotlib.pyplot as plt
 import shapely
 from trajgenpy import Utils
 from trajgenpy.Geometries import GeoMultiPolygon, GeoMultiTrajectory, GeoPolygon
 from trajgenpy.Query import query_features
+import trajgenpy.Logging
+
+log = trajgenpy.Logging.get_logger()
 
 if __name__ == "__main__":
     # Download the water features data within the bounding box
@@ -38,21 +42,39 @@ if __name__ == "__main__":
         crs="WGS84",
     )  # Download the water features data within the bounding box
 
-    polygon.plot(add_points=False)
     features = query_features(polygon, tags)
+    polygon.set_crs("EPSG:2197")
+    polygon.plot(add_points=False)
 
     # Plot highways
-    GeoMultiTrajectory(features["highway"], crs="WGS84").plot()
+    roads = GeoMultiTrajectory(features["highway"], crs="WGS84").set_crs("EPSG:2197")
+    roads.plot()
+
     # Plot Buildings
-    GeoMultiPolygon(features["building"], crs="WGS84").plot(
-        color="red", add_points=False
-    )
+    buildings = GeoMultiPolygon(features["building"], crs="WGS84").set_crs("EPSG:2197")
+    buildings.plot(color="red", add_points=False)
+
     # Plot natural features
-    GeoMultiTrajectory(features["natural"], crs="WGS84").plot(color="green")
-    Utils.plot_basemap()
+    coastline = GeoMultiTrajectory(features["natural"], crs="WGS84").set_crs(
+        "EPSG:2197"
+    )
+    coastline.plot(color="green")
 
-    # export_trajectory_tasks(
-    #     gdf_polygon.unary_union, buildings, roads + coastline, crs="EPSG:2197"
-    # )
+    # Export the polygon and the buildings as a GeoJSON file
+    geojson_collection = geojson.FeatureCollection(
+        [
+            polygon.to_geojson(id="boundary"),
+            buildings.to_geojson(id="obstacles"),
+        ]
+    )
 
+    with open("environment.geojson", "w") as f:
+        geojson.dump(geojson_collection, f)
+
+    # Plot on a map
+    Utils.plot_basemap(crs="EPSG:2197")
+
+    # No axis on the plot
+    plt.axis("equal")
+    plt.axis("off")
     plt.show()
