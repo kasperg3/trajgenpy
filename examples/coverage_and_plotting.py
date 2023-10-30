@@ -1,15 +1,12 @@
-import logging
-
 import shapely
 import shapely.plotting as shplt
 from matplotlib import pyplot as plt
-from trajgenpy import Geometries, Logging
+from trajgenpy import Geometries, Logging, Utils
 
 log = Logging.get_logger()
 
 
 def custom_example():
-    logging.warning("This is a warning message")
     poly = shapely.Polygon(
         [
             (12.620400, 55.687962),
@@ -55,17 +52,29 @@ def custom_example():
         )
 
         # Plotting
-        result.extend(sweeps_disconnected)
+        result.extend(sweeps_connected)
     multi_traj = Geometries.GeoMultiTrajectory(result, "EPSG:3857")
 
     # Convert the geometry back to WGS84(geodesic)
     # multi_traj.set_crs("WGS84")
     # geo_poly.set_crs("WGS84")
     # hole.set_crs("WGS84")
-    shplt.plot_polygon(geo_poly.get_geometry())
-    shplt.plot_polygon(hole.get_geometry())
-    shplt.plot_line(multi_traj.get_geometry())
+    shplt.plot_polygon(
+        hole.get_geometry(),
+        color="black",
+        facecolor="black",
+        add_points=False,
+        alpha=0.3,
+    )
+    shplt.plot_line(multi_traj.get_geometry(), add_points=False, linewidth=2)
+    shplt.plot_polygon(
+        geo_poly.get_geometry(),
+        color="black",
+        facecolor="none",
+        add_points=False,
+    )
     plt.axis("equal")
+    plt.axis("off")
     plt.show()
 
 

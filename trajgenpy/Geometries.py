@@ -87,7 +87,7 @@ class GeoMultiTrajectory(GeoData):
             self.is_geometry_of_type(geometry, shapely.MultiLineString)
             super().__init__(geometry, crs)
 
-    def plot(self, ax=None, add_points=True, color=None, linewidth=2, **kwargs):
+    def plot(self, ax=None, add_points=False, color=None, linewidth=2, **kwargs):
         if self.crs == "WGS84":
             log.warning(
                 "Plotting in WGS84 is not recomended as this distorts the geometry!"

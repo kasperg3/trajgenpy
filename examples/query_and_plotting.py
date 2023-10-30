@@ -11,9 +11,9 @@ log = trajgenpy.Logging.get_logger()
 if __name__ == "__main__":
     # Download the water features data within the bounding box
     tags = {
-        # "natural": ["water", "wetland"],
-        "natural": ["coastline"],
-        # "landuse": ["farmland"],
+        "natural": ["water", "wetland"],
+        # "natural": ["coastline"],
+        "landuse": ["farmland"],
         "highway": [
             "primary",
             "secondary",
@@ -33,18 +33,18 @@ if __name__ == "__main__":
     polygon = GeoPolygon(
         shapely.Polygon(
             [
-                (12.620400, 55.687962),
-                (12.632788, 55.691589),
-                (12.637446, 55.687689),
-                (12.624924, 55.683489),
-            ],
+                (10.490913, 55.315346),
+                (10.576744, 55.315346),
+                (10.576744, 55.337417),
+                (10.490913, 55.337417),
+            ]
         ),
         crs="WGS84",
     )  # Download the water features data within the bounding box
 
     features = query_features(polygon, tags)
     polygon.set_crs("EPSG:2197")
-    polygon.plot(add_points=False)
+    polygon.plot(facecolor="none", edgecolor="black", linewidth=2)
 
     # Plot highways
     roads = GeoMultiTrajectory(features["highway"], crs="WGS84").set_crs("EPSG:2197")
@@ -52,13 +52,13 @@ if __name__ == "__main__":
 
     # Plot Buildings
     buildings = GeoMultiPolygon(features["building"], crs="WGS84").set_crs("EPSG:2197")
-    buildings.plot(color="red", add_points=False)
+    buildings.plot(color="red")
 
     # Plot natural features
-    coastline = GeoMultiTrajectory(features["natural"], crs="WGS84").set_crs(
-        "EPSG:2197"
-    )
-    coastline.plot(color="green")
+    # coastline = GeoMultiTrajectory(features["natural"], crs="WGS84").set_crs(
+    #     "EPSG:2197"
+    # )
+    # coastline.plot(color="green")
 
     # Export the polygon and the buildings as a GeoJSON file
     geojson_collection = geojson.FeatureCollection(
