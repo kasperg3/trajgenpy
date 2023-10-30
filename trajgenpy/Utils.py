@@ -1,14 +1,9 @@
-from typing import List
 import contextily as ctx
 import matplotlib.pyplot as plt
-import numpy as np
 import shapely
-from cairo import LINE_CAP_SQUARE
-from scipy.ndimage import gaussian_filter
+from shapely.affinity import translate
 
 # Example usage:
-from shapely.geometry import LineString, MultiLineString
-from shapely.affinity import translate
 
 
 # A function to plot a map using the contextily library
