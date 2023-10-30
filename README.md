@@ -8,13 +8,31 @@
 
 ## Features
 
-- Boustrophedon Cell Decomposition
-- Task generation for coverage planning
-- Python bindings for easy integration into your Python projects
+### Covereage path generation
+
+Many coverage problems use the boustrophedon (way of the ox) coverage patter and has been implemented in python using [ethz-asl/polygon_coverage_planning](https://github.com/ethz-asl/polygon_coverage_planning) through c++ bindings.
+The example below has been created using very few lines, and can be applied to all types of polygons.
+
+![Alt Text](.assets/coverage_plot.png)
+
+### [OSM](https://wiki.openstreetmap.org/wiki/Main_Page) Feature extraction
+
+Using this library it becomes very easy to exctract features from Openstreetmap and convert the different geometries to and from geodetic coordinates.
+![Alt Text](.assets/map_features.png)
+
+Both of the examples showed above has been generated using less than 20 lines of code. More examples and extensions to the library is in the works. The specific tags of the features which can be queried can be found [here](https://wiki.openstreetmap.org/wiki/Map_features).
 
 ## Installation
 
-Before using TrajGenPy, ensure you have the following requirements installed:
+The package is regularly updated and new releases are created when significant changes to the main branch has happened.
+
+```bash
+pip install trajgenpy
+```
+
+## Build from source
+
+Before building TrajGenPy, ensure you have the following requirements installed:
 
 - [libcgal-dev](https://www.cgal.org/) - The Computational Geometry Algorithms Library
 - [pybind11-dev](https://pybind11.readthedocs.io/en/stable/) - A lightweight header-only library for creating Python bindings
@@ -29,15 +47,10 @@ Once you have the dependencies installed, you can install TrajGenPy using `pip`.
 
 ```bash
 pip install -r requirements.txt
-pip install .
+pip install -e .
 ```
 
-Alternatively, if you want to build a pip wheel, you can do the following:
-
-```bash
-pip wheel . -v
-pip install something.whl -v
-```
+The "-e" argument for pip is to enable the developer to edit the python source code and perform tests without having to rebuild everything.
 
 ## Usage
 
@@ -48,6 +61,7 @@ import trajgenpy
 ```
 
 You can then use the provided functions and classes to perform trajectory generation and task planning based on the Boustrophedon Cell Decomposition algorithm.
+See the examples in [a relative link](other_file.md)
 
 # Contributing & Development
 
