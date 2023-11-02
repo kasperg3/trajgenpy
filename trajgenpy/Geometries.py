@@ -1,13 +1,13 @@
 import math
-import geojson
 
+import geojson
 import pyproj
 import shapely
 import shapely.plotting as shplt
 from shapely.geometry.polygon import orient
 
 import trajgenpy.bindings as bindings
-import trajgenpy.Logging as Logging
+from trajgenpy import Logging
 
 log = Logging.get_logger()
 
@@ -329,11 +329,22 @@ def decompose_polygon(
             msg = "Obstacles must be a Shapely MultiPolygon."
             raise ValueError(msg)
 
+        # If the obstacles intersect with the boundary, take the union of the two and remove it from the obstacles list
+        updated_obstacles = []
+        for obstacle in obstacles.geoms:
+            if obstacle.intersects(boundary.boundary):
+                log.debug(
+                    "Obstacles intersect with the boundary, the geometries will be merged."
+                )
+                boundary = obstacles.union(boundary)
+            else:
+                updated_obstacles.append(obstacle)
+
+        obstacles = shapely.MultiPolygon(updated_obstacles)
     pwh = bindings.Polygon_with_holes_2(shapely_polygon_to_cgal(boundary))
     if obstacles is not None:
         for poly in obstacles.geoms:
             pwh.add_hole(shapely_polygon_to_cgal(poly))
-
     decompose_polygons = bindings.decompose(pwh)
     return [
         shapely.Polygon([(vertex.x, vertex.y) for vertex in polygon])

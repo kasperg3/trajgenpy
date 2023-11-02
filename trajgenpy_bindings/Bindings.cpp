@@ -33,13 +33,20 @@ py::list decompose(const PolygonWithHoles &pwh)
     std::vector<Polygon_2> decomposedPolygons;
     std::vector<Line_2> cell_dirs;
     double msa;
-    // std::cout<< "boundary: " << polygon_to_string(pwh.outer_boundary()) << std::endl;
-    // for(auto poly: pwh.holes()){
-    //     std::cout<< "hole: " << polygon_to_string(poly) << std::endl;
+    // std::cout << "boundary: " << polygon_to_string(pwh.outer_boundary()) << std::endl;
+    // for (auto poly : pwh.holes())
+    // {
+    //     std::cout << "hole: " << polygon_to_string(poly) << std::endl;
     // }
     // TODO before calculating BCD, check whether it is a valid polygon with holes and check that the function does not fail
-
-    polygon_coverage_planning::computeBestBCDFromPolygonWithHoles(pwh, &decomposedPolygons);
+    try
+    {
+        polygon_coverage_planning::computeBestBCDFromPolygonWithHoles(pwh, &decomposedPolygons);
+    }
+    catch (const std::exception &e)
+    {
+        std::cout << e.what() << '\n';
+    }
     py::list result;
     for (auto poly : decomposedPolygons)
     {

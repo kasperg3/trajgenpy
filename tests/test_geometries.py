@@ -255,5 +255,42 @@ def test_shapely_polygon_to_cgal():
     assert cgal_poly is not None
 
 
+def test_obstacle_polygon_overlaps_boundary():
+    poly = Polygon(
+        [
+            (12.620400, 55.687962),
+            (12.632788, 55.691589),
+            (12.637446, 55.687689),
+            (12.624924, 55.683489),
+            (12.628446, 55.686489),
+            (12.625924, 55.688489),
+            (12.630924, 55.689489),
+        ]
+    )
+
+    geo_poly = Geometries.GeoPolygon(poly)
+    geo_poly.set_crs("EPSG:3857")
+
+    polygon_list = Geometries.decompose_polygon(geo_poly.get_geometry(), obstacles=None)
+
+    # Define the coordinates for the hole (inner polygon)
+
+    hole = Polygon(
+        [
+            (12.620400, 55.688),
+            (12.631, 55.689),
+            (12.632, 55.687),
+        ]
+    )
+
+    hole = Geometries.GeoPolygon(hole)
+    hole.set_crs("EPSG:3857")
+
+    polygon_list = Geometries.decompose_polygon(
+        geo_poly.get_geometry(), obstacles=hole.get_geometry()
+    )
+    assert polygon_list is not None
+
+
 if __name__ == "__main__":
     pytest.main(["-v", "-x", "tests/test_geometries.py"])
