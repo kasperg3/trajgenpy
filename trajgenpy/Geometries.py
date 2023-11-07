@@ -40,6 +40,10 @@ class GeoData:
     def get_geometry(self):
         return self.geometry
 
+    def buffer(self, distance, quad_segs=1, cap_style="square", join_style="bevel"):
+        self.geometry = self.geometry.buffer(distance, quad_segs, cap_style, join_style)
+        return self
+
     def __str__(self):
         return f"Geometry in CRS: {self.crs}\nGeometry: {self.geometry}"
 
@@ -74,7 +78,9 @@ class GeoTrajectory(GeoData):
 class GeoMultiTrajectory(GeoData):
     def __init__(
         self,
-        geometry: shapely.MultiLineString | list[shapely.LineString],
+        geometry: shapely.MultiLineString
+        | list[shapely.LineString]
+        | shapely.LineString,
         crs="WGS84",
     ):
         super().__init__(geometry, crs)
@@ -83,6 +89,9 @@ class GeoMultiTrajectory(GeoData):
                 self.is_geometry_of_type(line, shapely.LineString)
 
             super().__init__(shapely.MultiLineString(geometry), crs)
+        elif isinstance(geometry, shapely.LineString):
+            self.is_geometry_of_type(geometry, shapely.LineString)
+            super().__init__(shapely.MultiLineString([geometry]), crs)
         else:
             self.is_geometry_of_type(geometry, shapely.MultiLineString)
             super().__init__(geometry, crs)
@@ -125,8 +134,9 @@ class GeoPoint(GeoData):
 
 
 class GeoPolygon(GeoData):
-    def __init__(self, geometry, crs="WGS84"):
-        self.is_geometry_of_type(geometry, shapely.Polygon)
+    def __init__(self, geometry: shapely.Polygon | shapely.LineString, crs="WGS84"):
+        self.is_geometry_of_type(geometry, shapely.Polygon | shapely.LineString)
+        geometry = shapely.Polygon(geometry)
         super().__init__(geometry, crs)
 
     def _convert_to_crs(self, crs):
@@ -169,7 +179,11 @@ class GeoPolygon(GeoData):
 
 class GeoMultiPolygon(GeoData):
     def __init__(self, geometry, crs="WGS84"):
-        self.is_geometry_of_type(geometry, shapely.MultiPolygon)
+        if isinstance(geometry, list):
+            for geom in geometry:
+                self.is_geometry_of_type(geom, shapely.Polygon)
+        else:
+            self.is_geometry_of_type(geometry, shapely.MultiPolygon)
         super().__init__(geometry, crs)
 
     def _convert_to_crs(self, crs):
