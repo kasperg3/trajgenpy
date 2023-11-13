@@ -32,6 +32,7 @@ namespace polygon_coverage_planning
         {
             directions.push_back(pwh.outer_boundary().edge(i).direction());
         }
+        // TODO should all the edge directions be added? Or is the outer boundary enough?
         for (PolygonWithHoles::Hole_const_iterator hit = pwh.holes_begin();
              hit != pwh.holes_end(); ++hit)
         {
@@ -117,6 +118,7 @@ namespace polygon_coverage_planning
         double min_altitude_sum = std::numeric_limits<double>::max();
 
         // Get all possible decomposition directions.
+
         std::vector<Direction_2> directions = findPerpEdgeDirections(pwh);
         // std::cout << "Number of perpendicular edge directions: " << directions.size() << std::endl;
         // For all possible rotations:

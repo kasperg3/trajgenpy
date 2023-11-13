@@ -101,7 +101,8 @@ class GeoMultiTrajectory(GeoData):
             log.warning(
                 "Plotting in WGS84 is not recomended as this distorts the geometry!"
             )
-        shplt.plot_line(self.geometry, ax, add_points, color, linewidth, **kwargs)
+        for line in self.geometry.geoms:
+            shplt.plot_line(line, ax, add_points, color, linewidth, **kwargs)
 
     def _convert_to_crs(self, crs):
         transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)

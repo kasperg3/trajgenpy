@@ -1,10 +1,10 @@
 import geojson
 import matplotlib.pyplot as plt
 import shapely
+import trajgenpy.Logging
 from trajgenpy import Utils
 from trajgenpy.Geometries import GeoMultiPolygon, GeoMultiTrajectory, GeoPolygon
 from trajgenpy.Query import query_features
-import trajgenpy.Logging
 
 log = trajgenpy.Logging.get_logger()
 
