@@ -55,11 +55,11 @@ def test_create_sweeps():
     segments = []
     for poly in decomposed_polygons:
         if poly.is_convex():
-            segments.extend(bindings.generate_sweeps(poly, 0.1))
+            segments.extend(bindings.generate_sweeps(poly, 0.5))
         else:
             msg = "not able to generate a plan for a non convex polygon"
             raise Exception(msg)
-    assert len(segments) == 80
+    assert len(segments) == 20
 
 
 # Run the tests
