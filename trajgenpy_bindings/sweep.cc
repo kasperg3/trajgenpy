@@ -105,7 +105,7 @@ namespace polygon_coverage_planning
                     throw std::runtime_error("Failed to calculate final sweep.");
                 }
                 // Do not add a sweep if it is half the offset, because then it has already been covered
-                if (CGAL::squared_distance(sweep_segment, prev_sweep_segment) < offset / 2)
+                if (sqrt(CGAL::squared_distance(sweep_segment, prev_sweep_segment).approx()) < offset.approx() / 2)
                 {
                     break;
                 }
