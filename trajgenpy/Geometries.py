@@ -5,7 +5,7 @@ import pyproj
 import shapely
 import shapely.plotting as shplt
 from shapely.geometry.polygon import orient
-
+import random
 import trajgenpy.bindings as bindings
 from trajgenpy import Logging
 
@@ -50,8 +50,15 @@ class GeoData:
     def __geo_interface__(self):
         return self.geometry.__geo_interface__
 
-    def to_geojson(self, id=None):
-        return geojson.Feature(id, self.geometry)
+    def to_geojson(self, id=None, name=None, properties=None):
+        if id is None:
+            id = random.randint(0, 1000000000)
+        if name is None:
+            name = str(id)
+
+        properties["crs"] = self.crs
+        properties["name"] = name
+        return geojson.Feature(id, self.geometry, properties=properties)
 
 
 class GeoTrajectory(GeoData):
@@ -80,6 +87,7 @@ class GeoMultiTrajectory(GeoData):
         self,
         geometry: shapely.MultiLineString
         | list[shapely.LineString]
+        | list[GeoTrajectory]
         | shapely.LineString,
         crs="WGS84",
     ):
@@ -92,6 +100,9 @@ class GeoMultiTrajectory(GeoData):
         elif isinstance(geometry, shapely.LineString):
             self.is_geometry_of_type(geometry, shapely.LineString)
             super().__init__(shapely.MultiLineString([geometry]), crs)
+        elif isinstance(geometry, GeoTrajectory):
+            self.is_geometry_of_type(geometry, GeoTrajectory)
+            super().__init__(shapely.MultiLineString([geometry.geometry]), crs)
         else:
             self.is_geometry_of_type(geometry, shapely.MultiLineString)
             super().__init__(geometry, crs)
@@ -293,7 +304,7 @@ def shapely_polygon_to_cgal(polygon: shapely.Polygon):
     return bindings.Polygon_2(cgal_points)
 
 
-def get_sweep_offset(overlap=0.1, height=30, field_of_view=90):
+def get_sweep_offset(overlap=0.1, height=10, field_of_view=90):
     if overlap < 0 or overlap > 1:
         msg = "Overlap percentage has to be a float between 0 and 1!"
         raise ValueError(msg)
