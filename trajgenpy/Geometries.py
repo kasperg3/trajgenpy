@@ -55,6 +55,8 @@ class GeoData:
             id = random.randint(0, 1000000000)
         if name is None:
             name = str(id)
+        if properties is None:
+            properties = {}
 
         properties["crs"] = self.crs
         properties["name"] = name
@@ -85,10 +87,12 @@ class GeoTrajectory(GeoData):
 class GeoMultiTrajectory(GeoData):
     def __init__(
         self,
-        geometry: shapely.MultiLineString
-        | list[shapely.LineString]
-        | list[GeoTrajectory]
-        | shapely.LineString,
+        geometry: (
+            shapely.MultiLineString
+            | list[shapely.LineString]
+            | list[GeoTrajectory]
+            | shapely.LineString
+        ),
         crs="WGS84",
     ):
         super().__init__(geometry, crs)
