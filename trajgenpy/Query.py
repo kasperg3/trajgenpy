@@ -5,9 +5,7 @@ import shapely
 from geojson import Feature, FeatureCollection, dump
 
 from trajgenpy import Logging
-from trajgenpy.Geometries import (
-    GeoPolygon,
-)
+from trajgenpy.Geometries import GeoPolygon
 
 log = Logging.get_logger()
 

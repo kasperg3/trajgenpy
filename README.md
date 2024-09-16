@@ -4,28 +4,24 @@
 [![Build Status](https://github.com/kasperg3/trajgenpy/actions/workflows/test.yml/badge.svg)](https://github.com/kasperg3/trajgenpy/actions/workflows/test.yml)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 
-**TrajGenPy** is a Python library that provides functionality for trajectory task generation using the Boustrophedon Cell Decomposition algorithm for coverage generation. It is an extension of the C++ implementation found in the [ethz-asl/polygon_coverage_planning](https://github.com/ethz-asl/polygon_coverage_planning) repository, with additional features and Python bindings.
+**TrajGenPy** is a powerful Python library designed for generating coverage trajectories using the Boustrophedon Cell Decomposition algorithm. This library facilitates the extraction of environmental features from OpenStreetMap (OSM) and converts them into geodetic coordinates, enabling efficient and effective coverage path planning. By leveraging the capabilities of TrajGenPy, users can easily generate coverage paths for various applications such as agricultural field coverage, robotic vacuum cleaning, and environmental monitoring.
 
-## Features
-
-### Covereage path generation
-
-Many coverage problems use the boustrophedon (way of the ox) coverage patter and has been implemented in python using [ethz-asl/polygon_coverage_planning](https://github.com/ethz-asl/polygon_coverage_planning) through c++ bindings.
-The example below has been created using very few lines, and can be applied to all types of polygons.
-
-![Alt Text](.assets/coverage_plot.png)
-
-### [OSM](https://wiki.openstreetmap.org/wiki/Main_Page) Feature extraction
-
-Using this library it becomes very easy to exctract features from Openstreetmap and convert the different geometries to and from geodetic coordinates.
-![Alt Text](.assets/map_features.png)
-
-Both of the examples showed above has been generated using less than 20 lines of code. More examples and extensions to the library is in the works. The specific tags of the features which can be queried can be found [here](https://wiki.openstreetmap.org/wiki/Map_features).
+<div style="display: flex; justify-content: space-between;">
+  <img src=".assets/image.png" alt="area" width="30%" />
+  <img src=".assets/features.png" alt="Map Features" width="30%" />
+  <img src=".assets/coverage.png" alt="Another Image" width="30%" />
+</div>
 
 ## Installation
 
 The package is regularly updated and new releases are created when significant changes to the main branch has happened.
 
+Requirements:
+```bash
+sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev
+```
+
+Install using pip:
 ```bash
 pip install trajgenpy
 ```
@@ -72,6 +68,20 @@ pip install -e .
 ```
 
 To contribute to trajgenpy, start by forking the repository on GitHub. Create a new branch for your changes, make the necessary code edits, commit your changes with clear messages, and push them to your fork. Create a pull request from your branch to the original repository, describing your changes and addressing any related issues. Once your pull request is approved, a project maintainer will merge it into the main branch.
+
+## [OSM](https://wiki.openstreetmap.org/wiki/Main_Page) Feature extraction
+
+Using this library it becomes very easy to exctract features from Openstreetmap and convert the different geometries to and from geodetic coordinates.
+![Alt Text](.assets/map_features.png)
+
+Both of the examples showed above has been generated using less than 20 lines of code. More examples and extensions to the library is in the works. The specific tags of the features which can be queried can be found [here](https://wiki.openstreetmap.org/wiki/Map_features).
+
+
+### Covereage path generation
+is a Python library that provides functionality for trajectory task generation using the Boustrophedon Cell Decomposition algorithm for coverage generation. It is an extension of the C++ implementation found in the [ethz-asl/polygon_coverage_planning](https://github.com/ethz-asl/polygon_coverage_planning) repository, with additional features and Python bindings.
+
+Many coverage problems use the boustrophedon (way of the ox) coverage patter and has been implemented in python using [ethz-asl/polygon_coverage_planning](https://github.com/ethz-asl/polygon_coverage_planning) through c++ bindings.
+The example below has been created using very few lines, and can be applied to all types of polygons.
 
 ## Citation
 

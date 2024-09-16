@@ -1,7 +1,6 @@
 import geojson
 import matplotlib.pyplot as plt
 import shapely
-import trajgenpy.Logging
 from trajgenpy import Utils
 from trajgenpy.Geometries import (
     GeoMultiPolygon,
@@ -13,7 +12,6 @@ from trajgenpy.Geometries import (
 )
 from trajgenpy.Query import query_features
 
-log = trajgenpy.Logging.get_logger()
 
 if __name__ == "__main__":
     # Download the water features data within the bounding box

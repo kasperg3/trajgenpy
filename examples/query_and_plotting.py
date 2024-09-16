@@ -77,6 +77,5 @@ if __name__ == "__main__":
     Utils.plot_basemap(crs="EPSG:2197")
 
     # No axis on the plot
-    plt.axis("equal")
     plt.axis("off")
     plt.show()

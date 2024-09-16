@@ -65,20 +65,16 @@ namespace polygon_coverage_planning
                 sweep_segment = sweep_segment.opposite();
             }
 
-            if (connect_sweeps)
+            if (connect_sweeps && !sweep_segments.empty())
             {
-                // connect to previous sweep
-                if (!sweep_segments.empty())
+                std::vector<Point_2> shortest_path;
+                if (!calculateShortestPath(visibility_graph, waypoints.back(), sweep_segment.source(), &shortest_path))
+                    return false;
+                // Create segments for all points except the first and last one.
+                for (std::vector<Point_2>::iterator it = std::next(shortest_path.begin()); it != std::prev(shortest_path.end()); ++it)
                 {
-                    std::vector<Point_2> shortest_path;
-                    if (!calculateShortestPath(visibility_graph, waypoints.back(), sweep_segment.source(), &shortest_path))
-                        return false;
-                    // Create segments for all points except the first and last one.
-                    for (std::vector<Point_2>::iterator it = std::next(shortest_path.begin()); it != std::prev(shortest_path.end()); ++it)
-                    {
-                        sweep_segments.push_back(Segment_2(*std::prev(it), *it));
-                        waypoints.push_back(*it);
-                    }
+                    sweep_segments.push_back(Segment_2(*std::prev(it), *it));
+                    waypoints.push_back(*it);
                 }
             }
 
