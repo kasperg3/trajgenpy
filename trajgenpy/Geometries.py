@@ -198,6 +198,7 @@ class GeoMultiPolygon(GeoData):
         if isinstance(geometry, list):
             for geom in geometry:
                 self.is_geometry_of_type(geom, shapely.Polygon)
+            geometry = shapely.MultiPolygon(geometry)
         else:
             self.is_geometry_of_type(geometry, shapely.MultiPolygon)
         super().__init__(geometry, crs)
