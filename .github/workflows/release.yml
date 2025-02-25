@@ -18,7 +18,7 @@ jobs:
     - uses: pypa/cibuildwheel@v2.22
       env:
         CIBW_ENABLE: cpython-prerelease
-        CIBW_BEFORE_BUILD: "pip install -r requirements.txt && apt-get update && apt-get -y install libcgal-dev pybind11-dev"
+        CIBW_BEFORE_BUILD: "pip install -r requirements.txt && apt update && apt -y install libcgal-dev pybind11-dev"
     - name: Verify clean directory
       run: git diff --exit-code
       shell: bash
