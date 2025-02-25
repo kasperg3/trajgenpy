@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11", "cgal"]
+requires = ["scikit-build-core>=0.10", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -23,9 +23,6 @@ cmake.build-type = "Release"
 wheel.expand-macos-universal-tags = true
 minimum-version = "build-system.requires"
 
-[tool.system-packages]
-apt = ["libcgal-dev", "pybind11-dev"]
-
 [project.optional-dependencies]
 test = ["pytest"]
 
@@ -39,6 +36,7 @@ testpaths = ["tests"]
 
 [tool.cibuildwheel]
 build-frontend = "build[uv]"
+before-all = "yum install -y libcgal-dev pybind11-dev"
 test-command = "pytest {project}/tests"
 test-extras = ["test"]
 
