@@ -11,23 +11,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        submodules: true
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.x"
-    - name: Install dependencies
-      run: | 
-        sudo apt update
-        sudo apt -y install libcgal-dev pybind11-dev
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        
+        python-version: "3.10"
     - uses: pypa/cibuildwheel@v2.22
       env:
         CIBW_ENABLE: cpython-prerelease
-        CIBW_ARCHS_WINDOWS: auto ARM64
-
+        CIBW_BEFORE_BUILD: "pip install -r requirements.txt && apt-get update && apt-get -y install libcgal-dev pybind11-dev"
     - name: Verify clean directory
       run: git diff --exit-code
       shell: bash
