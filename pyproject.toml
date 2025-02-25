@@ -36,9 +36,11 @@ testpaths = ["tests"]
 
 [tool.cibuildwheel]
 build-frontend = "build[uv]"
-before-all = "yum install -y libcgal-dev pybind11-dev"
 test-command = "pytest {project}/tests"
 test-extras = ["test"]
+
+[tool.cibuildwheel.linux]
+before-all = "apt install -y libcgal-dev pybind11-dev"
 
 [tool.cibuildwheel.pyodide]
 environment.CFLAGS = "-fexceptions"
