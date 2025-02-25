@@ -23,6 +23,9 @@ cmake.build-type = "Release"
 wheel.expand-macos-universal-tags = true
 minimum-version = "build-system.requires"
 
+[tool.system-packages]
+apt = ["libcgal-dev", "pybind11-dev"]
+
 [project.optional-dependencies]
 test = ["pytest"]
 
