@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.3.3", "pybind11"]
+requires = ["scikit-build-core>=0.10", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 
@@ -8,8 +8,10 @@ name = "trajgenpy"
 version = "0.1.4"
 description = "TrajGenPy is a Python library that provides functionality for trajectory task generation using the Boustrophedon Cell Decomposition algorithm for coverage generation."
 readme = "README.md"
-authors = [{ name = "My Name", email = "me@email.com" }]
-requires-python = ">=3.7"
+authors = [
+    { name = "Kasper A. R. Grontved", email = "kaspergrontved@gmail.com" },
+]
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
@@ -19,6 +21,8 @@ classifiers = [
 
 [tool.scikit-build]
 cmake.build-type = "Release"
+wheel.expand-macos-universal-tags = true
+minimum-version = "build-system.requires"
 
 [project.optional-dependencies]
 test = ["pytest"]
@@ -32,11 +36,14 @@ testpaths = ["tests"]
 # pythonpath = [".", "src"]
 
 [tool.cibuildwheel]
+build-frontend = "build[uv]"
 test-command = "pytest {project}/tests"
 test-extras = ["test"]
-test-skip = ["*universal2:arm64"]
-build-verbosity = 1
 
+[tool.cibuildwheel.pyodide]
+environment.CFLAGS = "-fexceptions"
+environment.LDFLAGS = "-fexceptions"
+build-frontend = { name = "build", args = ["--exports", "whole_archive"] }
 
 [tool.ruff]
 select = [

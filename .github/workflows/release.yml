@@ -11,32 +11,37 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
       with:
-        python-version: "3.10"
-    - name: Install dependencies
-      run: | 
-        sudo apt update
-        sudo apt -y install libcgal-dev pybind11-dev
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        submodules: true
 
-    - name: Install pypa/build
-      run: >-
-        python3 -m
-        pip install
-        build
-        --user
-    - name: Build a binary wheel and a source tarball
-      run: python3 -m build
+    - uses: astral-sh/setup-uv@v4
 
-    - name: Store the distribution packages
-      uses: actions/upload-artifact@v4
+    - uses: pypa/cibuildwheel@v2.22
+      env:
+        CIBW_ENABLE: cpython-prerelease
+        CIBW_ARCHS_WINDOWS: auto ARM64
+
+    - name: Verify clean directory
+      run: git diff --exit-code
+      shell: bash
+
+    - uses: actions/upload-artifact@v4
       with:
-        name: python-package-distributions
-        path: dist/
-  
+        name: cibw-wheels-${{ matrix.os }}
+        path: wheelhouse/*.whl
+
+    - name: Build SDist
+      run: pipx run build --sdist
+
+    - name: Check metadata
+      run: pipx run twine check dist/*
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-sdist
+        path: dist/*.tar.gz
+
+
   publish-to-pypi:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
@@ -49,7 +54,20 @@ jobs:
       url: https://pypi.org/p/trajgenpy  # Replace <package-name> with your PyPI project name
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
+      attestations: write
     steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: cibw-*
+        merge-multiple: true
+        path: dist
+    - name: Generate artifact attestation for sdist and wheels
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-path: "dist/*"
     - name: Download all the dists
       uses: actions/download-artifact@v4
       with:
