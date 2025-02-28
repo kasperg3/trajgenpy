@@ -8,105 +8,84 @@ jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-22.04
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.10"
-    - uses: pypa/cibuildwheel@v2.22
-        
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.22
       env:
-        CIBW_ENABLE: cpython-prerelease
-        CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_24
-        CIBW_BEFORE_ALL_LINUX: "pip install -r requirements.txt && apt-get update && apt-get -y install libcgal-dev pybind11-dev"
+        CIBW_BEFORE_ALL_LINUX: "apt-get update && apt-get -y install libcgal-dev pybind11-dev"
     - name: Verify clean directory
       run: git diff --exit-code
       shell: bash
-
-    - uses: actions/upload-artifact@v4
+    - name: Upload wheels
+      uses: actions/upload-artifact@v4
       with:
         name: cibw-wheels-ubuntu-latest
         path: wheelhouse/*.whl
-
     - name: Build SDist
-      run: pipx run build --sdist
-
+      run: python -m build --sdist
     - name: Check metadata
-      run: pipx run twine check dist/*
-
-    - uses: actions/upload-artifact@v4
+      run: twine check dist/*
+    - name: Upload SDist
+      uses: actions/upload-artifact@v4
       with:
         name: cibw-sdist
         path: dist/*.tar.gz
 
 
   publish-to-pypi:
-    name: >-
-      Publish Python 🐍 distribution 📦 to PyPI
+    name: Publish Python 🐍 distribution 📦 to PyPI
     if: startsWith(github.ref, 'refs/tags/')
-    needs:
-    - build
+    needs: build
     runs-on: ubuntu-22.04
     environment:
       name: release
-      url: https://pypi.org/p/trajgenpy  # Replace <package-name> with your PyPI project name
+      url: https://pypi.org/p/trajgenpy  # Replace with your PyPI project name
     permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+      id-token: write
       attestations: write
     steps:
     - uses: actions/setup-python@v5
       with:
         python-version: "3.x"
-    - uses: actions/download-artifact@v4
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
       with:
         pattern: cibw-*
         merge-multiple: true
         path: dist
-    - name: Generate artifact attestation for sdist and wheels
+    - name: Generate artifact attestation
       uses: actions/attest-build-provenance@v1
       with:
         subject-path: "dist/*"
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: python-package-distributions
-        path: dist/
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
 
   github-release:
-    name: >-
-      Sign the Python 🐍 distribution 📦 with Sigstore
-      and upload them to GitHub Release
-    needs:
-    - publish-to-pypi
+    name: Sign and upload to GitHub Release
+    needs: publish-to-pypi
     runs-on: ubuntu-22.04
-
     permissions:
-      contents: write  # IMPORTANT: mandatory for making GitHub Releases
-      id-token: write  # IMPORTANT: mandatory for sigstore
-
+      contents: write
+      id-token: write
     steps:
-    - name: Download all the dists
+    - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        name: python-package-distributions
+        name: cibw-sdist
         path: dist/
-    - name: Sign the dists with Sigstore
+    - name: Sign the distributions
       uses: sigstore/gh-action-sigstore-python@v2.1.1
       with:
-        inputs: >-
-          ./dist/*.tar.gz
-          ./dist/*.whl
-    - name: Upload artifact signatures to GitHub Release
+        inputs: ./dist/*.tar.gz ./dist/*.whl
+    - name: Upload to GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      # Upload to GitHub Release using the `gh` CLI.
-      # `dist/` contains the built packages, and the
-      # sigstore-produced signatures and certificates.
-      run: >-
-        gh release upload
-        '${{ github.ref_name }}' dist/**
-        --repo '${{ github.repository }}'
+      run: |
+        gh release create "${{ github.ref_name }}" dist/* --repo "${{ github.repository }}"
