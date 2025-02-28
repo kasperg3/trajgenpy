@@ -66,7 +66,7 @@ jobs:
     - name: Sign the distributions
       uses: sigstore/gh-action-sigstore-python@v3.0.0
       with:
-        inputs: ./dist/*.tar.gz ./dist/*.whl
+        inputs: ./dist/*.tar.gz
     - name: Upload to GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
