@@ -21,6 +21,7 @@
 
 #include "bcd.h"
 #include "cgal_comm.h"
+#include "cgal_variant_compat.h"
 #include <cassert>
 namespace polygon_coverage_planning
 {
@@ -444,13 +445,13 @@ namespace polygon_coverage_planning
             Intersection result = CGAL::intersection(*it, l);
             if (result)
             {
-                if (boost::get<Segment_2>(&*result))
+                if (cgal_compat::get_variant<Segment_2>(&*result))
                 {
                     *(intersection++) = it->target();
                 }
                 else
                 {
-                    const Point_2 *p = boost::get<Point_2>(&*result);
+                    const Point_2 *p = cgal_compat::get_variant<Point_2>(&*result);
                     *(intersection++) = *p;
                 }
             }
