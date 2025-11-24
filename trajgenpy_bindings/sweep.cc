@@ -19,6 +19,7 @@
 
 #include "sweep.h"
 
+#include "cgal_variant_compat.h"
 namespace polygon_coverage_planning
 {
 
@@ -207,14 +208,14 @@ namespace polygon_coverage_planning
             Intersection result = CGAL::intersection(*it, l);
             if (result)
             {
-                if (const Segment_2 *s = boost::get<Segment_2>(&*result))
+                if (const Segment_2 *s = cgal_compat::get_variant<Segment_2>(&*result))
                 {
                     intersections.push_back(s->source());
                     intersections.push_back(s->target());
                 }
                 else
                 {
-                    intersections.push_back(*boost::get<Point_2>(&*result));
+                    intersections.push_back(*cgal_compat::get_variant<Point_2>(&*result));
                 }
             }
         }

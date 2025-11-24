@@ -21,6 +21,7 @@
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Triangular_expansion_visibility_2.h>
 
+#include "cgal_variant_compat.h"
 #include "cgal_comm.h"
 #include "visibility_polygon.h"
 namespace polygon_coverage_planning
@@ -78,12 +79,12 @@ namespace polygon_coverage_planning
         typedef VisibilityArrangement::Face_handle VisibilityFaceHandle;
         VisibilityFaceHandle fh;
         VisibilityArrangement visibility_arr;
-        if ((f = boost::get<VisibilityArrangement::Face_const_handle>(&pl_result)))
+        if ((f = cgal_compat::get_variant<VisibilityArrangement::Face_const_handle>(&pl_result)))
         {
             // Located in face.
             fh = tev.compute_visibility(query_point, *f, visibility_arr);
         }
-        else if ((v = boost::get<VisibilityArrangement::Vertex_const_handle>(
+        else if ((v = cgal_compat::get_variant<VisibilityArrangement::Vertex_const_handle>(
                       &pl_result)))
         {
             // Located on vertex.
@@ -102,7 +103,7 @@ namespace polygon_coverage_planning
 
             fh = tev.compute_visibility(query_point, he, visibility_arr);
         }
-        else if ((e = boost::get<VisibilityArrangement::Halfedge_const_handle>(
+        else if ((e = cgal_compat::get_variant<VisibilityArrangement::Halfedge_const_handle>(
                       &pl_result)))
         {
             // Located on halfedge.

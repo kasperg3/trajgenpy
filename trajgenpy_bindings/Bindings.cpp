@@ -144,7 +144,7 @@ PYBIND11_MODULE(bindings, m)
     py::class_<PolygonWithHoles>(m, "Polygon_with_holes_2")
         .def(py::init<>([](const Polygon_2 poly)
                         { return PolygonWithHoles(poly); }))
-        .def("add_hole", &PolygonWithHoles::add_hole)
+        .def("add_hole", [](PolygonWithHoles& pwh, const Polygon_2& hole) { pwh.add_hole(hole); })
         .def_property_readonly("holes", [](PolygonWithHoles &p) -> std::vector<Polygon_2>
                                {
             std::vector<Polygon_2> holes;
