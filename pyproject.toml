@@ -19,7 +19,7 @@ dependencies = [
     "geopandas>=1.1.1",
     "matplotlib>=3.10.6",
     "numpy>=2.2.6",
-    "osmx>=2.0.6",
+    "osmx>=0.0.5",
     "pyproj>=3.7.0",
     "Shapely>=2.1.1",
 ]
