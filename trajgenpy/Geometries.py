@@ -404,7 +404,7 @@ def decompose_polygon(
                 log.debug(
                     "Obstacles intersect with the boundary, the geometries will be merged."
                 )
-                boundary = obstacles.union(boundary)
+                boundary = _snap_polygon(obstacle.union(boundary))
             else:
                 updated_obstacles.append(_snap_polygon(obstacle))
 
