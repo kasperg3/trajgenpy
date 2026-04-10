@@ -341,10 +341,10 @@ def _snap_polygon(polygon: shapely.Polygon, precision: int = 1) -> shapely.Polyg
     """
     exterior = [
         (round(x, precision), round(y, precision))
-        for x, y in polygon.exterior.coords
+        for x, y in polygon.exterior.coords[:-1]
     ]
     interiors = [
-        [(round(x, precision), round(y, precision)) for x, y in ring.coords]
+        [(round(x, precision), round(y, precision)) for x, y in ring.coords[:-1]]
         for ring in polygon.interiors
     ]
     return shapely.Polygon(exterior, interiors)
