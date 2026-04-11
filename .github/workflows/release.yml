@@ -28,6 +28,7 @@ jobs:
       run: uv run python -m build
     - name: Repair Linux wheels for PyPI
       run: |
+        # Prevent unmatched wheel globs from being treated as literal strings.
         shopt -s nullglob
         wheels=(dist/*-linux_x86_64.whl)
         if [ ${#wheels[@]} -gt 0 ]; then
