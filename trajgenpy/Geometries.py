@@ -319,12 +319,46 @@ def get_sweep_offset(overlap=0.1, height=10, field_of_view=90):
     )
 
 
+def _snap_polygon(polygon: shapely.Polygon, precision: int = 1) -> shapely.Polygon:
+    """Round polygon vertex coordinates to *precision* decimal places.
+
+    CGAL's exact-arithmetic decomposition and sweep-pattern code can produce a
+    SIGSEGV when fed coordinates that carry floating-point noise from pyproj
+    map-projection (e.g. a WGS-84 rectangle projected to UTM becomes a slightly
+    non-rectangular quadrilateral with sub-millimetre jitter on each vertex).
+    Snapping to 10 cm (``precision=1``, the default) in the projected metric CRS
+    removes that noise and produces clean doubles that CGAL handles without
+    issues, while introducing at most 5 cm of positional error — negligible for
+    any practical coverage-planning use case.
+
+    Args:
+        polygon: Shapely Polygon whose vertices will be snapped.
+        precision: Number of decimal places to round to (default 1 → 10 cm in
+            a metric CRS such as UTM).
+
+    Returns:
+        A new Shapely Polygon with snapped coordinates.
+    """
+    exterior = [
+        (round(x, precision), round(y, precision))
+        for x, y in polygon.exterior.coords[:-1]
+    ]
+    interiors = [
+        [(round(x, precision), round(y, precision)) for x, y in ring.coords[:-1]]
+        for ring in polygon.interiors
+    ]
+    return shapely.Polygon(exterior, interiors)
+
+
 def generate_sweep_pattern(
     polygon: shapely.Polygon,
     sweep_offset,
     clockwise=True,
     connect_sweeps=False,
 ):
+    # Snap coordinates to 10 cm precision to remove pyproj floating-point noise
+    # that can cause CGAL to SIGSEGV on otherwise valid polygon inputs.
+    polygon = _snap_polygon(polygon)
     # Make sure that the orientation of the polygon is counterclockwise and the interior is clockwise
     cgal_poly = shapely_polygon_to_cgal(orient(polygon=polygon))
     segments = bindings.generate_sweeps(
@@ -353,6 +387,9 @@ def generate_sweep_pattern(
 def decompose_polygon(
     boundary: shapely.Polygon, obstacles: shapely.MultiPolygon | shapely.Polygon = None
 ):
+    # Snap coordinates to 10 cm precision to remove pyproj floating-point noise
+    # that can cause CGAL to SIGSEGV on otherwise valid polygon inputs.
+    boundary = _snap_polygon(boundary)
     if obstacles is not None:
         if isinstance(obstacles, shapely.Polygon):
             obstacles = shapely.MultiPolygon([obstacles])
@@ -367,9 +404,9 @@ def decompose_polygon(
                 log.debug(
                     "Obstacles intersect with the boundary, the geometries will be merged."
                 )
-                boundary = obstacles.union(boundary)
+                boundary = _snap_polygon(obstacle.union(boundary))
             else:
-                updated_obstacles.append(obstacle)
+                updated_obstacles.append(_snap_polygon(obstacle))
 
         obstacles = shapely.MultiPolygon(updated_obstacles)
     pwh = bindings.Polygon_with_holes_2(shapely_polygon_to_cgal(boundary))
