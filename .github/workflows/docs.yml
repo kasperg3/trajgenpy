@@ -1,0 +1,49 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches:
+      - main
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+# Allow the workflow to write to the gh-pages branch
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history so mkdocs can generate correct revision dates
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcgal-dev pybind11-dev
+
+      - name: Install library (needed for mkdocstrings API autodoc)
+        run: uv pip install --system . --verbose
+
+      - name: Install documentation dependencies
+        run: |
+          uv pip install --system \
+            mkdocs \
+            mkdocs-material \
+            "mkdocstrings[python]"
+
+      - name: Build and deploy to GitHub Pages
+        run: mkdocs gh-deploy --force
