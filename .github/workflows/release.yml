@@ -6,8 +6,29 @@ on:
      - '*'
 
 jobs:
-  build:
-    name: Build distribution 📦
+  build-wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.22.0
+      env:
+        CIBW_BUILD: "cp310-manylinux_x86_64 cp311-manylinux_x86_64"
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+        CIBW_BEFORE_ALL_LINUX: "dnf install -y epel-release && dnf install -y CGAL-devel"
+    - name: Upload wheels
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-wheels
+        path: ./wheelhouse/*.whl
+
+  build-sdist:
+    name: Build source distribution
     runs-on: ubuntu-22.04
 
     steps:
@@ -16,36 +37,36 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.10"
-    - name: Install dependencies
-      run: pip install -r requirements.txt && sudo apt-get update && sudo apt-get -y install libcgal-dev pybind11-dev
-    - name: Build distribution
-      run: | 
-        python -m pip install build 
-        python -m build
-    - name: Upload distribution
+    - name: Build sdist
+      run: |
+        python -m pip install build
+        python -m build --sdist
+    - name: Upload sdist
       uses: actions/upload-artifact@v4
       with:
-        name: python-distribution
-        path: dist/*
+        name: python-sdist
+        path: dist/*.tar.gz
 
   publish-to-pypi:
     name: Publish Python 🐍 distribution 📦 to PyPI
     if: startsWith(github.ref, 'refs/tags/')
-    needs: build
+    needs: [build-wheels, build-sdist]
     runs-on: ubuntu-22.04
     environment:
       name: release
-      url: https://pypi.org/p/trajgenpy  # Replace with your PyPI project name
+      url: https://pypi.org/p/trajgenpy
     permissions:
       id-token: write
     steps:
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.x"
-    - name: Download artifacts
+    - name: Download wheels
       uses: actions/download-artifact@v4
       with:
-        name: python-distribution
+        name: python-wheels
+        path: dist
+    - name: Download sdist
+      uses: actions/download-artifact@v4
+      with:
+        name: python-sdist
         path: dist
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
@@ -58,10 +79,15 @@ jobs:
       contents: write
       id-token: write
     steps:
-    - name: Download artifacts
+    - name: Download wheels
       uses: actions/download-artifact@v4
       with:
-        name: python-distribution
+        name: python-wheels
+        path: dist/
+    - name: Download sdist
+      uses: actions/download-artifact@v4
+      with:
+        name: python-sdist
         path: dist/
     - name: Sign the distributions
       uses: sigstore/gh-action-sigstore-python@v3.0.0
