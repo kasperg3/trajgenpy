@@ -37,6 +37,11 @@ minimum-version = "build-system.requires"
 
 [project.optional-dependencies]
 test = ["pytest"]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
