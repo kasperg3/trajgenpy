@@ -25,7 +25,7 @@ jobs:
         uv pip install --system -r requirements.txt
         uv pip install --system build auditwheel
     - name: Build distribution
-      run: uv run python -m build
+      run: python -m build
     - name: Repair Linux wheels for PyPI
       run: |
         # Prevent unmatched wheel globs from being treated as literal strings.
@@ -34,7 +34,7 @@ jobs:
         if [ ${#wheels[@]} -gt 0 ]; then
           mkdir -p wheelhouse
           for wheel in "${wheels[@]}"; do
-            uv run auditwheel repair "$wheel" -w wheelhouse
+            auditwheel repair "$wheel" -w wheelhouse
             rm "$wheel"
           done
           cp wheelhouse/*.whl dist/
