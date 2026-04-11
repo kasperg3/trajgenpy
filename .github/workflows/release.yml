@@ -26,7 +26,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: python-distribution
-        path: dist/*.tar.gz
+        path: dist/*
 
   publish-to-pypi:
     name: Publish Python 🐍 distribution 📦 to PyPI
@@ -66,7 +66,7 @@ jobs:
     - name: Sign the distributions
       uses: sigstore/gh-action-sigstore-python@v3.0.0
       with:
-        inputs: ./dist/*.tar.gz
+        inputs: ./dist/*
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2
       with:
