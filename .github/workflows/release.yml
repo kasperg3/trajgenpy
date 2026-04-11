@@ -16,12 +16,28 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.10"
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v4
     - name: Install dependencies
-      run: pip install -r requirements.txt && sudo apt-get update && sudo apt-get -y install libcgal-dev pybind11-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install libcgal-dev pybind11-dev patchelf
+        uv pip install --system -r requirements.txt
+        uv pip install --system build auditwheel
     - name: Build distribution
-      run: | 
-        python -m pip install build 
-        python -m build
+      run: uv run python -m build
+    - name: Repair Linux wheels for PyPI
+      run: |
+        shopt -s nullglob
+        wheels=(dist/*-linux_x86_64.whl)
+        if [ ${#wheels[@]} -gt 0 ]; then
+          mkdir -p wheelhouse
+          for wheel in "${wheels[@]}"; do
+            uv run auditwheel repair "$wheel" -w wheelhouse
+            rm "$wheel"
+          done
+          cp wheelhouse/*.whl dist/
+        fi
     - name: Upload distribution
       uses: actions/upload-artifact@v4
       with:
