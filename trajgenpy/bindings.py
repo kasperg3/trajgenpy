@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 import shapely
 from shapely.affinity import rotate
 from shapely.geometry import LineString, Polygon
-
 
 _EPS = 1e-9
 
@@ -237,4 +236,3 @@ def generate_sweeps(
         end = Point_2(float(unrot.coords[-1][0]), float(unrot.coords[-1][1]))
         result.append(Segment_2(start, end))
     return result
-
