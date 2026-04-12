@@ -16,11 +16,6 @@
 
 The package is regularly updated and new releases are created when significant changes to the main branch has happened.
 
-Requirements:
-```bash
-sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev
-```
-
 Install using pip:
 ```bash
 pip install trajgenpy
@@ -28,18 +23,8 @@ pip install trajgenpy
 
 ## Build from source
 
-Before building TrajGenPy, ensure you have the following requirements installed:
-
-- [libcgal-dev](https://www.cgal.org/) - The Computational Geometry Algorithms Library
-- [pybind11-dev](https://pybind11.readthedocs.io/en/stable/) - A lightweight header-only library for creating Python bindings
-
-You can install these dependencies on Ubuntu using the following commands:
-
-```bash
-sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev
-```
-
-Once you have the dependencies installed, you can install TrajGenPy using `pip`. Simply navigate to your project directory and run:
+TrajGenPy now ships pure-Python geometry bindings and no longer requires CGAL/pybind11 at build time.
+Simply navigate to your project directory and run:
 
 ```bash
 pip install -r requirements.txt
@@ -61,11 +46,30 @@ See the examples in [a relative link](other_file.md)
 
 # Contributing & Development
 
-Install the bindings in dev mode. The bindings have to be reinstalled if any of the trajgenpy_bindings package is changed.
+Install in dev mode:
 
 ```bash
 pip install -e .
 ```
+
+## Pure-Python bindings rewrite: framework analysis
+
+The previous implementation depended on CGAL + pybind11. For portability and easier installation, the bindings layer was rewritten in pure Python while preserving the existing public API (`Point_2`, `Polygon_2`, `Polygon_with_holes_2`, `Segment_2`, `decompose`, `generate_sweeps`).
+
+Evaluated framework options:
+
+- **Shapely (selected)**  
+  Provides robust geometric predicates/operations backed by GEOS, including constrained triangulation and stable polygon clipping. It is already a core dependency and offers good numerical robustness with compiled kernels under the hood.
+- **SciPy / Qhull triangulation**  
+  Useful for unconstrained triangulation but weaker fit for polygon-with-holes constraints and would require extra stitching logic.
+- **Custom pure-Python computational geometry**  
+  Highest maintenance and significantly worse numerical stability/performance for this use case.
+
+Chosen approach:
+
+- Use **Shapely constrained triangulation** + convex merge to produce convex decomposition cells.
+- Use deterministic sweep-line intersections over rotated polygons for sweep generation.
+- Keep data-model compatibility with the original bindings API to minimize downstream changes.
 
 To contribute to trajgenpy, start by forking the repository on GitHub. Create a new branch for your changes, make the necessary code edits, commit your changes with clear messages, and push them to your fork. Create a pull request from your branch to the original repository, describing your changes and addressing any related issues. Once your pull request is approved, a project maintainer will merge it into the main branch.
 
