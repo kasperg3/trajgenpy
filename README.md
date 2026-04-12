@@ -23,7 +23,7 @@ pip install trajgenpy
 
 ## Build from source
 
-TrajGenPy now ships pure-Python geometry bindings and no longer requires CGAL/pybind11 at build time.
+TrajGenPy now ships with pure-Python geometry bindings and no longer requires CGAL/pybind11 at build time.
 Simply navigate to your project directory and run:
 
 ```bash

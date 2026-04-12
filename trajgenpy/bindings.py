@@ -140,12 +140,7 @@ def decompose(pwh: Polygon_with_holes_2):
         return []
 
     cells = []
-    geoms = (
-        triangulated.geoms
-        if hasattr(triangulated, "geoms")
-        else [triangulated]  # pragma: no cover
-    )
-    for tri in geoms:
+    for tri in triangulated.geoms:
         if tri.geom_type != "Polygon" or tri.area <= _EPS:
             continue
         clipped = tri.intersection(region)
