@@ -1,3 +1,5 @@
+import itertools
+
 import pytest
 import trajgenpy.bindings as bindings
 
@@ -15,12 +17,13 @@ def _decomposition_coordinates(polygons):
 
 def _canonical_polygon(vertices):
     """Return a canonical polygon ring independent of start vertex and winding."""
-    points = [(float(x), float(y)) for x, y in vertices]
+    points = list(vertices)
 
     def _rotations(seq):
-        return [tuple(seq[i:] + seq[:i]) for i in range(len(seq))]
+        for i in range(len(seq)):
+            yield tuple(seq[i:] + seq[:i])
 
-    return min(_rotations(points) + _rotations(list(reversed(points))))
+    return min(itertools.chain(_rotations(points), _rotations(list(reversed(points)))))
 
 
 def _canonical_decomposition(polygons):
