@@ -1,6 +1,6 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11"]
-build-backend = "scikit_build_core.build"
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "trajgenpy"
@@ -30,10 +30,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 
-[tool.scikit-build]
-cmake.build-type = "Release"
-wheel.expand-macos-universal-tags = true
-minimum-version = "build-system.requires"
+[tool.setuptools.packages.find]
+include = ["trajgenpy*"]
 
 [project.optional-dependencies]
 test = ["pytest"]

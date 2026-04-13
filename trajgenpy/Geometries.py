@@ -127,7 +127,12 @@ class GeoData:
         Returns:
             GeoData: ``self`` (for method chaining).
         """
-        self.geometry = self.geometry.buffer(distance, quad_segs, cap_style, join_style)
+        self.geometry = self.geometry.buffer(
+            distance,
+            quad_segs=quad_segs,
+            cap_style=cap_style,
+            join_style=join_style,
+        )
         return self
 
     def __str__(self):
