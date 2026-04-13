@@ -8,6 +8,8 @@ This module provides convenience functions for:
   is useful for producing metric plots that start at ``(0, 0)``.
 """
 
+import logging
+
 import contextily as ctx
 import matplotlib.pyplot as plt
 import shapely
@@ -39,7 +41,13 @@ def plot_basemap(ax=None, provider=ctx.providers.Esri.WorldImagery, crs="WGS84")
     """
     if ax is None:
         ax = plt.gca()
-    return ctx.add_basemap(ax, source=provider, crs=crs)
+    try:
+        return ctx.add_basemap(ax, source=provider, crs=crs)
+    except Exception as error:
+        logging.getLogger(__name__).warning(
+            "Unable to fetch basemap tiles: %s", error
+        )
+        return None
 
 
 def normalize_coordinates(boundary, geometries=None):

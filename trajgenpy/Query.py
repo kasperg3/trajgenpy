@@ -49,7 +49,8 @@ def query_features(area: GeoPolygon, tags: dict):
     Returns:
         dict[str, shapely.geometry.base.BaseGeometry]: A dictionary mapping
         each requested tag key to the union of all matching geometries
-        clipped to *area*.  An empty list is returned on query failure.
+        clipped to *area*. If the query fails, each requested tag maps to an
+        empty list.
 
     Raises:
         ValueError: If *area* does not use the ``"WGS84"`` CRS.
@@ -62,15 +63,15 @@ def query_features(area: GeoPolygon, tags: dict):
             forest_geom = results.get("natural")
     """
     # Check that the geometry has the right crs
-    if not area.crs and area.crs != "WGS84":
+    if area.crs and area.crs != "WGS84":
         msg = "The geometry must use WGS84 CRS!"
         raise ValueError(msg)
 
     try:
         geometries = ox.features_from_polygon(area.get_geometry(), tags=tags)
     except Exception as e:
-        log.error("Something went wrong while trying to query from OSM: ", extra=str(e))
-        return []
+        log.error("Something went wrong while trying to query from OSM: %s", e)
+        return {tag: [] for tag in tags}
     results = {tag: [] for tag in tags}
     # Iterate through the features and populate the results dictionary
     for tag in tags:

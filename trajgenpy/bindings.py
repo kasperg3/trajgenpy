@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from itertools import pairwise
 
 import shapely
 from shapely.affinity import rotate
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import LineString, Point, Polygon
+from shapely.ops import substring
 
 _EPS = 1e-9
 
@@ -212,6 +214,33 @@ def generate_sweeps(
     if connect_sweeps and len(sweep_lines) > 1:
         connected: list[LineString] = []
         current_end = None
+        ring = LineString(list(rotated.exterior.coords))
+
+        def _path_along_ring(start, end):
+            start_distance = ring.project(Point(start))
+            end_distance = ring.project(Point(end))
+            total = ring.length
+
+            def _forward_path(a, b):
+                if a <= b:
+                    coords = list(substring(ring, a, b).coords)
+                else:
+                    coords = list(substring(ring, a, total).coords)
+                    wrap = list(substring(ring, 0, b).coords)
+                    if wrap:
+                        coords.extend(wrap[1:])
+                return coords
+
+            path_a_b = _forward_path(start_distance, end_distance)
+            path_b_a = list(reversed(_forward_path(end_distance, start_distance)))
+            if len(path_a_b) < 2:
+                return [start, end]
+            if len(path_b_a) < 2:
+                return path_a_b
+            length_a_b = LineString(path_a_b).length
+            length_b_a = LineString(path_b_a).length
+            return path_a_b if length_a_b <= length_b_a else path_b_a
+
         for idx, seg in enumerate(sweep_lines):
             x0, y0 = seg.coords[0]
             x1, y1 = seg.coords[-1]
@@ -219,7 +248,15 @@ def generate_sweeps(
                 x0, y0, x1, y1 = x1, y1, x0, y0
             current = LineString([(x0, y0), (x1, y1)])
             if current_end is not None:
-                connected.append(LineString([current_end, (x0, y0)]))
+                direct_connector = LineString([current_end, (x0, y0)])
+                if rotated.covers(direct_connector):
+                    connected.append(direct_connector)
+                else:
+                    boundary_path = _path_along_ring(current_end, (x0, y0))
+                    for start, end in pairwise(boundary_path):
+                        connector_segment = LineString([start, end])
+                        if connector_segment.length > _EPS:
+                            connected.append(connector_segment)
             connected.append(current)
             current_end = (x1, y1)
         sweep_lines = connected

@@ -63,7 +63,11 @@ if __name__ == "__main__":
     # obstacles.plot(color="red")
 
     # Plot natural features
-    coastline = GeoPolygon(features["natural"], crs="WGS84").set_crs("EPSG:2197")
+    natural_geometry = features["natural"]
+    if isinstance(natural_geometry, shapely.Polygon | shapely.LineString):
+        coastline = GeoPolygon(natural_geometry, crs="WGS84").set_crs("EPSG:2197")
+    else:
+        coastline = polygon
     coastline.plot(color="green", facecolor="none")
 
     extra_search = GeoPolygon(

@@ -199,6 +199,16 @@ def test_sweep_gen():
     assert len(test) == 1
 
 
+def test_connected_sweeps_for_non_convex_polygon_stay_inside_polygon():
+    poly = Polygon([(0, 0), (4, 0), (4, 1), (1, 1), (1, 4), (0, 4)])
+    connected = Geometries.generate_sweep_pattern(
+        poly, sweep_offset=0.5, clockwise=True, connect_sweeps=True
+    )
+
+    assert len(connected) == 1
+    assert poly.buffer(1e-9).covers(connected[0])
+
+
 def test_sweep_gen_with_obstacle():
     poly = Polygon(
         [
