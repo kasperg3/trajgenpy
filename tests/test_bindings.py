@@ -2,6 +2,17 @@ import pytest
 import trajgenpy.bindings as bindings
 
 
+def _make_polygon(points):
+    polygon = bindings.Polygon_2()
+    for x, y in points:
+        polygon.push_back(bindings.Point_2(x, y))
+    return polygon
+
+
+def _decomposition_coordinates(polygons):
+    return [[(vertex.x, vertex.y) for vertex in polygon] for polygon in polygons]
+
+
 def test_create_polygon():
     # Construct a polygon from a list of points
     points = [
@@ -60,6 +71,51 @@ def test_create_sweeps():
             msg = "not able to generate a plan for a non convex polygon"
             raise Exception(msg)
     assert len(segments) == 20
+
+
+def test_decompose_matches_legacy_cpp_output_square_with_hole():
+    """Golden regression from legacy C++ bindings at commit 4c6253a."""
+    outer_poly = bindings.Polygon_with_holes_2(
+        _make_polygon([(0, 0), (0, 10), (10, 10), (10, 0)])
+    )
+    outer_poly.add_hole(_make_polygon([(2, 2), (2, 8), (8, 8), (8, 2)]))
+
+    decomposed_polygons = bindings.decompose(outer_poly)
+    assert _decomposition_coordinates(decomposed_polygons) == [
+        [(10.0, -0.0), (10.0, 10.0), (8.0, 10.0), (8.0, -0.0)],
+        [(8.0, 8.0), (8.0, 10.0), (2.0, 10.0), (2.0, 8.0)],
+        [(8.0, -0.0), (8.0, 2.0), (2.0, 2.0), (2.0, -0.0)],
+        [(2.0, -0.0), (2.0, 10.0), (-0.0, 10.0), (-0.0, 0.0)],
+    ]
+
+
+def test_decompose_matches_legacy_cpp_output_concave_polygon():
+    """Golden regression from legacy C++ bindings at commit 4c6253a."""
+    concave = _make_polygon(
+        [
+            (12.620400, 55.687962),
+            (12.632788, 55.691589),
+            (12.637446, 55.687689),
+            (12.624924, 55.683489),
+            (12.628446, 55.686489),
+            (12.625924, 55.688489),
+            (12.630924, 55.689489),
+        ]
+    )
+    pwh = bindings.Polygon_with_holes_2(concave)
+
+    decomposed_polygons = bindings.decompose(pwh)
+    assert _decomposition_coordinates(decomposed_polygons) == [
+        [(12.625924, 55.688489), (12.626523990911974, 55.68801319436005), (12.630924, 55.689489)],
+        [(12.632788, 55.691589), (12.6204, 55.687962), (12.630924, 55.689489), (12.634045630169595, 55.69053602497608)],
+        [
+            (12.634045630169595, 55.69053602497608),
+            (12.626523990911974, 55.68801319436005),
+            (12.628446, 55.686489),
+            (12.624924, 55.683489),
+            (12.637446, 55.687689),
+        ],
+    ]
 
 
 # Run the tests
