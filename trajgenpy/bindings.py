@@ -233,8 +233,10 @@ def generate_sweeps(
 
             path_a_b = _forward_path(start_distance, end_distance)
             path_b_a = list(reversed(_forward_path(end_distance, start_distance)))
-            if len(path_a_b) < 2:
+            if len(path_a_b) < 2 and len(path_b_a) < 2:
                 return [start, end]
+            if len(path_a_b) < 2:
+                return path_b_a
             if len(path_b_a) < 2:
                 return path_a_b
             length_a_b = LineString(path_a_b).length

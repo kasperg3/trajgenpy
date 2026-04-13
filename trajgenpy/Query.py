@@ -63,7 +63,7 @@ def query_features(area: GeoPolygon, tags: dict):
             forest_geom = results.get("natural")
     """
     # Check that the geometry has the right crs
-    if area.crs and area.crs != "WGS84":
+    if not area.crs or area.crs != "WGS84":
         msg = "The geometry must use WGS84 CRS!"
         raise ValueError(msg)
 

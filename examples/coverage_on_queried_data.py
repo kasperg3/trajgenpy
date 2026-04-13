@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     # Plot natural features
     natural_geometry = features["natural"]
-    if isinstance(natural_geometry, shapely.Polygon | shapely.LineString):
+    if isinstance(natural_geometry, (shapely.Polygon, shapely.LineString)):
         coastline = GeoPolygon(natural_geometry, crs="WGS84").set_crs("EPSG:2197")
     else:
         coastline = polygon
