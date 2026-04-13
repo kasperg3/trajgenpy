@@ -23,7 +23,7 @@ def _canonical_polygon(vertices):
         for i in range(len(seq)):
             yield tuple(seq[i:] + seq[:i])
 
-    return min(itertools.chain(_rotations(points), _rotations(list(reversed(points)))))
+    return min(itertools.chain(_rotations(points), _rotations(points[::-1])))
 
 
 def _canonical_decomposition(polygons):
