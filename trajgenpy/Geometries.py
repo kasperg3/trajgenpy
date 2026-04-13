@@ -19,6 +19,7 @@ import pyproj
 import shapely
 import shapely.plotting as shplt
 from shapely.geometry.polygon import orient
+from shapely.ops import transform as _shapely_transform
 import random
 import trajgenpy.bindings as bindings
 from trajgenpy import Logging
@@ -69,9 +70,20 @@ class GeoData:
         self.crs = crs
         return self
 
-    def _convert_to_crs(self, crs):  # noqa: ARG002
-        msg = "_convert_to_crs(crs) sould be implemented in the data classes!"
-        raise NotImplementedError(msg)
+    def _convert_to_crs(self, crs):
+        """Reproject the underlying Shapely geometry to *crs*.
+
+        Uses :func:`shapely.ops.transform` to recurse through every
+        coordinate of the geometry (including polygon interior rings and
+        ``Multi*`` parts) and apply a :class:`pyproj.Transformer`.  The
+        ``z=None`` default on the inner lambda preserves the historical
+        behaviour of dropping any Z coordinate during reprojection.
+        """
+        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
+        self.geometry = _shapely_transform(
+            lambda x, y, z=None: transformer.transform(x, y),
+            self.geometry,
+        )
 
     def is_geometry_of_type(self, geometry, expected_class):
         """Raise :exc:`ValueError` if *geometry* is not an instance of *expected_class*.
@@ -187,14 +199,6 @@ class GeoTrajectory(GeoData):
             )
         shplt.plot_line(self.geometry, ax, add_points, color, linewidth, **kwargs)
 
-    def _convert_to_crs(self, crs):
-        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
-
-        converted_coords = [
-            transformer.transform(x, y) for x, y in list(self.geometry.coords)
-        ]
-        self.geometry = shapely.LineString(converted_coords)
-
 
 class GeoMultiTrajectory(GeoData):
     """CRS-aware wrapper for a collection of path trajectories.
@@ -231,21 +235,17 @@ class GeoMultiTrajectory(GeoData):
         ),
         crs="WGS84",
     ):
-        super().__init__(geometry, crs)
         if isinstance(geometry, list):
             for line in geometry:
                 self.is_geometry_of_type(line, shapely.LineString)
-
-            super().__init__(shapely.MultiLineString(geometry), crs)
+            geometry = shapely.MultiLineString(geometry)
         elif isinstance(geometry, shapely.LineString):
-            self.is_geometry_of_type(geometry, shapely.LineString)
-            super().__init__(shapely.MultiLineString([geometry]), crs)
+            geometry = shapely.MultiLineString([geometry])
         elif isinstance(geometry, GeoTrajectory):
-            self.is_geometry_of_type(geometry, GeoTrajectory)
-            super().__init__(shapely.MultiLineString([geometry.geometry]), crs)
+            geometry = shapely.MultiLineString([geometry.geometry])
         else:
             self.is_geometry_of_type(geometry, shapely.MultiLineString)
-            super().__init__(geometry, crs)
+        super().__init__(geometry, crs)
 
     def plot(self, ax=None, add_points=False, color=None, linewidth=2, **kwargs):
         """Render all trajectories on a Matplotlib axes.
@@ -267,17 +267,6 @@ class GeoMultiTrajectory(GeoData):
             )
         for line in self.geometry.geoms:
             shplt.plot_line(line, ax, add_points, color, linewidth, **kwargs)
-
-    def _convert_to_crs(self, crs):
-        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
-        # Convert the coordinates of each line in the MultiLineString
-        converted_geoms = [
-            [
-                transformer.transform(x, y) for x, y in list(line.coords)
-            ]  # Convert the coordinates of each line in the MultiLineString
-            for line in self.geometry.geoms
-        ]
-        self.geometry = shapely.MultiLineString(converted_geoms)
 
 
 class GeoPoint(GeoData):
@@ -311,11 +300,6 @@ class GeoPoint(GeoData):
             )
         shplt.plot_points(self.geometry, ax, add_points, color, linewidth, **kwargs)
 
-    def _convert_to_crs(self, crs):
-        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
-        x, y = transformer.transform(self.geometry.x, self.geometry.y)
-        self.geometry = shapely.Point(x, y)
-
 
 class GeoPolygon(GeoData):
     """CRS-aware wrapper for a simple or holed polygon.
@@ -335,18 +319,6 @@ class GeoPolygon(GeoData):
         self.is_geometry_of_type(geometry, shapely.Polygon | shapely.LineString)
         geometry = shapely.Polygon(geometry)
         super().__init__(geometry, crs)
-
-    def _convert_to_crs(self, crs):
-        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
-        # Convert each point in the polygon
-        exterior = [
-            transformer.transform(x, y) for x, y in self.geometry.exterior.coords
-        ]
-        interiors = [
-            [transformer.transform(x, y) for x, y in interior.coords]
-            for interior in self.geometry.interiors
-        ]
-        self.geometry = shapely.Polygon(exterior, interiors)
 
     def plot(
         self,
@@ -406,20 +378,6 @@ class GeoMultiPolygon(GeoData):
         else:
             self.is_geometry_of_type(geometry, shapely.MultiPolygon)
         super().__init__(geometry, crs)
-
-    def _convert_to_crs(self, crs):
-        transformer = pyproj.Transformer.from_crs(self.crs, crs, always_xy=True)
-        polygon_list = []
-        for polygon in list(self.geometry.geoms):
-            # Convert each point in the polygon
-            exterior = [transformer.transform(x, y) for x, y in polygon.exterior.coords]
-            interiors = [
-                [transformer.transform(x, y) for x, y in interior.coords]
-                for interior in polygon.interiors
-            ]
-            polygon_list.append(shapely.Polygon(exterior, interiors))
-
-        self.geometry = shapely.MultiPolygon(polygon_list)
 
     def plot(
         self,
