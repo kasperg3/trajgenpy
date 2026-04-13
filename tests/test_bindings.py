@@ -14,6 +14,7 @@ def _decomposition_coordinates(polygons):
 
 
 def _canonical_polygon(vertices):
+    """Return a canonical polygon ring independent of start vertex and winding."""
     points = [(float(x), float(y)) for x, y in vertices]
 
     def _rotations(seq):
@@ -23,6 +24,7 @@ def _canonical_polygon(vertices):
 
 
 def _canonical_decomposition(polygons):
+    """Return a canonical decomposition independent of polygon ordering."""
     return tuple(sorted(_canonical_polygon(poly) for poly in polygons))
 
 
