@@ -2,6 +2,12 @@
 
 CRS-aware geometry wrappers and coverage-planning algorithms.
 
+Backward compatibility note: public planning function interfaces remain stable.
+Geometry validity checks and repairs are handled internally by
+`decompose_polygon` and `generate_sweep_pattern` (configurable through optional
+`validation_strategy`), so existing call sites keep working without required
+parameter changes.
+
 ---
 
 ## Geometry classes
