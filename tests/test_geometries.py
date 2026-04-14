@@ -317,7 +317,7 @@ def test_default_and_explicit_repair_validation_match():
 
 def test_strict_validation_raises_for_invalid_polygon():
     invalid_poly = Polygon([(0, 0), (2, 2), (0, 2), (2, 0), (0, 0)])
-    with pytest.raises(ValueError, match="invalid"):
+    with pytest.raises(ValueError, match="Boundary is invalid\\."):
         Geometries.decompose_polygon(invalid_poly, validation_strategy="strict")
 
 
