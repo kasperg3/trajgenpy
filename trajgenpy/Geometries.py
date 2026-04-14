@@ -26,7 +26,11 @@ from trajgenpy import Logging
 
 log = Logging.get_logger()
 
+# Minimum allowed area (CRS units squared) for decomposition outputs.
+# Filters near-zero-area cells that can trigger CGAL orientation/numerical failures.
 MIN_DECOMPOSE_POLYGON_AREA = 1.0
+# Minimum allowed area (CRS units squared) for sweep generation inputs.
+# Prevents degenerate polygons from reaching the CGAL sweep implementation.
 MIN_SWEEP_POLYGON_AREA = 1.0
 
 

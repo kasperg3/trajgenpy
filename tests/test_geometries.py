@@ -331,6 +331,7 @@ def test_generate_sweep_pattern_returns_empty_for_small_area(monkeypatch):
 
     monkeypatch.setattr(Geometries.bindings, "generate_sweeps", _fail_if_called)
 
+    # Area is 0.25, below Geometries.MIN_SWEEP_POLYGON_AREA (= 1.0).
     small_polygon = Polygon([(0, 0), (1, 0), (0, 0.5)])
     sweeps = Geometries.generate_sweep_pattern(small_polygon, sweep_offset=1.0)
 
