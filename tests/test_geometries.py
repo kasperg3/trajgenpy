@@ -169,13 +169,9 @@ def test_decompose():
         geo_poly.get_geometry(), obstacles=hole.get_geometry()
     )
 
-    # Assert that the sum of areas of the decomposed polygons is equal to the area of the
-    # snapped polygon minus the snapped hole. decompose_polygon snaps coordinates to 10 cm
-    # precision before CGAL calls, so the reference areas must be computed from the same
-    # snapped geometries rather than the original unsnapped inputs.
-    snapped_boundary = Geometries._snap_polygon(geo_poly.get_geometry())
-    snapped_hole = Geometries._snap_polygon(hole.get_geometry())
-    total_area = snapped_boundary.area - snapped_hole.area
+    # Assert that the sum of areas of the decomposed polygons is equal to the
+    # boundary area minus the hole area.
+    total_area = geo_poly.get_geometry().area - hole.get_geometry().area
     assert pytest.approx(sum([poly.area for poly in polygon_list]), rel=1e-3) == total_area
     assert len(polygon_list) > 0
 
@@ -295,6 +291,34 @@ def test_obstacle_polygon_overlaps_boundary():
         geo_poly.get_geometry(), obstacles=hole.get_geometry()
     )
     assert polygon_list is not None
+
+
+def test_default_and_explicit_repair_validation_match():
+    poly = Polygon(
+        [
+            (12.620400, 55.687962),
+            (12.632788, 55.691589),
+            (12.637446, 55.687689),
+            (12.624924, 55.683489),
+        ]
+    )
+    offset = Geometries.get_sweep_offset(0.1, 30, 90)
+
+    default_sweeps = Geometries.generate_sweep_pattern(poly, offset)
+    repair_sweeps = Geometries.generate_sweep_pattern(
+        poly, offset, validation_strategy="repair"
+    )
+    assert len(default_sweeps) == len(repair_sweeps)
+
+    default_cells = Geometries.decompose_polygon(poly)
+    repair_cells = Geometries.decompose_polygon(poly, validation_strategy="repair")
+    assert len(default_cells) == len(repair_cells)
+
+
+def test_strict_validation_raises_for_invalid_polygon():
+    invalid_poly = Polygon([(0, 0), (2, 2), (0, 2), (2, 0), (0, 0)])
+    with pytest.raises(ValueError, match="invalid"):
+        Geometries.decompose_polygon(invalid_poly, validation_strategy="strict")
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ core algorithmic functions needed for coverage path planning:
 """
 
 import math
+from typing import Literal
 
 import geojson
 import pyproj
@@ -560,35 +561,45 @@ def get_sweep_offset(overlap=0.1, height=10, field_of_view=90):
     )
 
 
-def _snap_polygon(polygon: shapely.Polygon, precision: int = 1) -> shapely.Polygon:
-    """Round polygon vertex coordinates to *precision* decimal places.
+def _coerce_valid_polygons(
+    geometry: shapely.Polygon | shapely.MultiPolygon,
+    *,
+    where: str,
+    validation_strategy: Literal["repair", "strict"],
+) -> list[shapely.Polygon]:
+    """Validate polygonal input and optionally repair invalid geometries."""
+    if validation_strategy not in {"repair", "strict"}:
+        msg = "validation_strategy must be either 'repair' or 'strict'."
+        raise ValueError(msg)
 
-    CGAL's exact-arithmetic decomposition and sweep-pattern code can produce a
-    SIGSEGV when fed coordinates that carry floating-point noise from pyproj
-    map-projection (e.g. a WGS-84 rectangle projected to UTM becomes a slightly
-    non-rectangular quadrilateral with sub-millimetre jitter on each vertex).
-    Snapping to 10 cm (``precision=1``, the default) in the projected metric CRS
-    removes that noise and produces clean doubles that CGAL handles without
-    issues, while introducing at most 5 cm of positional error — negligible for
-    any practical coverage-planning use case.
+    if not isinstance(geometry, (shapely.Polygon, shapely.MultiPolygon)):
+        msg = f"{where} must be a Shapely Polygon or MultiPolygon."
+        raise ValueError(msg)
+    if geometry.is_empty:
+        msg = f"{where} must not be empty."
+        raise ValueError(msg)
 
-    Args:
-        polygon: Shapely Polygon whose vertices will be snapped.
-        precision: Number of decimal places to round to (default 1 → 10 cm in
-            a metric CRS such as UTM).
+    current = geometry
+    if not current.is_valid:
+        if validation_strategy == "strict":
+            msg = f"{where} is invalid."
+            raise ValueError(msg)
+        current = shapely.make_valid(current)
+        if current.is_empty:
+            msg = f"{where} could not be repaired."
+            raise ValueError(msg)
 
-    Returns:
-        A new Shapely Polygon with snapped coordinates.
-    """
-    exterior = [
-        (round(x, precision), round(y, precision))
-        for x, y in polygon.exterior.coords[:-1]
-    ]
-    interiors = [
-        [(round(x, precision), round(y, precision)) for x, y in ring.coords[:-1]]
-        for ring in polygon.interiors
-    ]
-    return shapely.Polygon(exterior, interiors)
+    if isinstance(current, shapely.Polygon):
+        return [current]
+    if isinstance(current, shapely.MultiPolygon):
+        polygons = [poly for poly in current.geoms if not poly.is_empty]
+        if not polygons:
+            msg = f"{where} has no non-empty polygon parts."
+            raise ValueError(msg)
+        return polygons
+
+    msg = f"{where} could not be represented as Polygon or MultiPolygon."
+    raise ValueError(msg)
 
 
 def generate_sweep_pattern(
@@ -596,6 +607,7 @@ def generate_sweep_pattern(
     sweep_offset,
     clockwise=True,
     connect_sweeps=False,
+    validation_strategy: Literal["repair", "strict"] = "repair",
 ):
     """Generate a boustrophedon sweep pattern over a convex polygon.
 
@@ -618,15 +630,23 @@ def generate_sweep_pattern(
             into a single :class:`~shapely.LineString` (suitable for
             continuous path execution).  When ``False`` (default) each
             segment is returned as a separate :class:`~shapely.LineString`.
+        validation_strategy: Validation mode for input geometry.
+            ``"repair"`` (default) attempts to repair invalid polygons using
+            :func:`shapely.make_valid`; ``"strict"`` raises :class:`ValueError`
+            when input is invalid.
 
     Returns:
         list[shapely.LineString]: A list of sweep line segments, or a
         single-element list containing the connected path when
         *connect_sweeps* is ``True``.
     """
-    # Snap coordinates to 10 cm precision to remove pyproj floating-point noise
-    # that can cause CGAL to SIGSEGV on otherwise valid polygon inputs.
-    polygon = _snap_polygon(polygon)
+    polygons = _coerce_valid_polygons(
+        polygon, where="Polygon", validation_strategy=validation_strategy
+    )
+    if len(polygons) != 1:
+        msg = "Polygon must resolve to a single Polygon."
+        raise ValueError(msg)
+    polygon = polygons[0]
     # Make sure that the orientation of the polygon is counterclockwise and the interior is clockwise
     cgal_poly = shapely_polygon_to_cgal(orient(polygon=polygon))
     segments = bindings.generate_sweeps(
@@ -653,7 +673,9 @@ def generate_sweep_pattern(
 
 
 def decompose_polygon(
-    boundary: shapely.Polygon, obstacles: shapely.MultiPolygon | shapely.Polygon = None
+    boundary: shapely.Polygon,
+    obstacles: shapely.MultiPolygon | shapely.Polygon = None,
+    validation_strategy: Literal["repair", "strict"] = "repair",
 ):
     """Decompose a polygon (with optional obstacles) into convex cells.
 
@@ -672,6 +694,10 @@ def decompose_polygon(
             Accepts a single :class:`~shapely.Polygon` or a
             :class:`~shapely.MultiPolygon`.  Pass ``None`` (default) for an
             obstacle-free area.
+        validation_strategy: Validation mode for boundary/obstacles.
+            ``"repair"`` (default) attempts to repair invalid polygons using
+            :func:`shapely.make_valid`; ``"strict"`` raises :class:`ValueError`
+            when invalid geometry is passed.
 
     Returns:
         list[shapely.Polygon]: The convex decomposition cells.  Each cell is
@@ -681,9 +707,13 @@ def decompose_polygon(
         ValueError: If *obstacles* is provided but is neither a
             :class:`~shapely.Polygon` nor a :class:`~shapely.MultiPolygon`.
     """
-    # Snap coordinates to 10 cm precision to remove pyproj floating-point noise
-    # that can cause CGAL to SIGSEGV on otherwise valid polygon inputs.
-    boundary = _snap_polygon(boundary)
+    boundary_polygons = _coerce_valid_polygons(
+        boundary, where="Boundary", validation_strategy=validation_strategy
+    )
+    if len(boundary_polygons) != 1:
+        msg = "Boundary must resolve to a single Polygon."
+        raise ValueError(msg)
+    boundary = boundary_polygons[0]
     if obstacles is not None:
         if isinstance(obstacles, shapely.Polygon):
             obstacles = shapely.MultiPolygon([obstacles])
@@ -694,13 +724,24 @@ def decompose_polygon(
         # If the obstacles intersect with the boundary, take the union of the two and remove it from the obstacles list
         updated_obstacles = []
         for obstacle in obstacles.geoms:
-            if obstacle.intersects(boundary.boundary):
-                log.debug(
-                    "Obstacles intersect with the boundary, the geometries will be merged."
-                )
-                boundary = _snap_polygon(obstacle.union(boundary))
-            else:
-                updated_obstacles.append(_snap_polygon(obstacle))
+            repaired_obstacles = _coerce_valid_polygons(
+                obstacle, where="Obstacle", validation_strategy=validation_strategy
+            )
+            for repaired_obstacle in repaired_obstacles:
+                if repaired_obstacle.intersects(boundary.boundary):
+                    log.debug(
+                        "Obstacles intersect with the boundary, the geometries will be merged."
+                    )
+                    merged = repaired_obstacle.union(boundary)
+                    merged_polygons = _coerce_valid_polygons(
+                        merged, where="Boundary", validation_strategy=validation_strategy
+                    )
+                    if len(merged_polygons) != 1:
+                        msg = "Boundary merge must resolve to a single Polygon."
+                        raise ValueError(msg)
+                    boundary = merged_polygons[0]
+                else:
+                    updated_obstacles.append(repaired_obstacle)
 
         obstacles = shapely.MultiPolygon(updated_obstacles)
     pwh = bindings.Polygon_with_holes_2(shapely_polygon_to_cgal(boundary))
