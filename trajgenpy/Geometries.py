@@ -26,6 +26,13 @@ from trajgenpy import Logging
 
 log = Logging.get_logger()
 
+# Minimum allowed area (CRS units squared) for decomposition outputs.
+# Filters near-zero-area cells that can trigger CGAL orientation/numerical failures.
+MIN_DECOMPOSE_POLYGON_AREA = 1.0
+# Minimum allowed area (CRS units squared) for sweep generation inputs.
+# Prevents degenerate polygons from reaching the CGAL sweep implementation.
+MIN_SWEEP_POLYGON_AREA = 1.0
+
 
 class GeoData:
     """Abstract base class for CRS-aware geometry wrappers.
@@ -622,8 +629,13 @@ def generate_sweep_pattern(
     Returns:
         list[shapely.LineString]: A list of sweep line segments, or a
         single-element list containing the connected path when
-        *connect_sweeps* is ``True``.
+        *connect_sweeps* is ``True``. If the polygon area is below
+        ``MIN_SWEEP_POLYGON_AREA`` (in CRS units squared), an empty list is
+        returned.
     """
+    if polygon.area < MIN_SWEEP_POLYGON_AREA:
+        return []
+
     # Snap coordinates to 10 cm precision to remove pyproj floating-point noise
     # that can cause CGAL to SIGSEGV on otherwise valid polygon inputs.
     polygon = _snap_polygon(polygon)
@@ -675,7 +687,9 @@ def decompose_polygon(
 
     Returns:
         list[shapely.Polygon]: The convex decomposition cells.  Each cell is
-        a simple :class:`~shapely.Polygon` with no holes.
+        a simple :class:`~shapely.Polygon` with no holes. Cells with area
+        below ``MIN_DECOMPOSE_POLYGON_AREA`` (in CRS units squared) are
+        removed.
 
     Raises:
         ValueError: If *obstacles* is provided but is neither a
@@ -708,7 +722,8 @@ def decompose_polygon(
         for poly in obstacles.geoms:
             pwh.add_hole(shapely_polygon_to_cgal(poly))
     decompose_polygons = bindings.decompose(pwh)
-    return [
+    polygons_list = [
         shapely.Polygon([(vertex.x, vertex.y) for vertex in polygon])
         for polygon in decompose_polygons
     ]
+    return [polygon for polygon in polygons_list if polygon.area >= MIN_DECOMPOSE_POLYGON_AREA]

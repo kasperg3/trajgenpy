@@ -297,5 +297,46 @@ def test_obstacle_polygon_overlaps_boundary():
     assert polygon_list is not None
 
 
+def test_decompose_polygon_filters_degenerate_cells(monkeypatch):
+    small_poly = Geometries.bindings.Polygon_2(
+        [
+            Geometries.bindings.Point_2(0.0, 0.0),
+            Geometries.bindings.Point_2(0.5, 0.0),
+            Geometries.bindings.Point_2(0.0, 0.5),
+        ]
+    )
+    large_poly = Geometries.bindings.Polygon_2(
+        [
+            Geometries.bindings.Point_2(0.0, 0.0),
+            Geometries.bindings.Point_2(2.0, 0.0),
+            Geometries.bindings.Point_2(0.0, 2.0),
+        ]
+    )
+
+    monkeypatch.setattr(
+        Geometries.bindings, "decompose", lambda _pwh: [small_poly, large_poly]
+    )
+
+    boundary = Polygon([(0, 0), (3, 0), (3, 3), (0, 3)])
+    cells = Geometries.decompose_polygon(boundary)
+
+    assert len(cells) == 1
+    assert cells[0].area >= Geometries.MIN_DECOMPOSE_POLYGON_AREA
+
+
+def test_generate_sweep_pattern_returns_empty_for_small_area(monkeypatch):
+    def _fail_if_called(*_args, **_kwargs):
+        msg = "generate_sweeps should not be called for below-threshold polygons"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(Geometries.bindings, "generate_sweeps", _fail_if_called)
+
+    # Area is 0.25, below Geometries.MIN_SWEEP_POLYGON_AREA (= 1.0).
+    small_polygon = Polygon([(0, 0), (1, 0), (0, 0.5)])
+    sweeps = Geometries.generate_sweep_pattern(small_polygon, sweep_offset=1.0)
+
+    assert sweeps == []
+
+
 if __name__ == "__main__":
     pytest.main(["-v", "-x", "tests/test_geometries.py"])
