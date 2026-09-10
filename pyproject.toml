@@ -38,6 +38,13 @@ cmake.build-type = "Release"
 wheel.expand-macos-universal-tags = true
 minimum-version = "build-system.requires"
 
+[tool.cibuildwheel.overrides]
+# CPython 3.14 interpreters require glibc >= 2.34, so the cp314 wheel must be
+# built on the AlmaLinux 9 image. Older Pythons stay on manylinux_2_28 for
+# maximum distro compatibility.
+select = "cp314-manylinux_x86_64"
+manylinux-x86_64-image = "manylinux_2_34"
+
 [project.optional-dependencies]
 test = ["pytest"]
 docs = [

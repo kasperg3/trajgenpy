@@ -77,6 +77,9 @@ jobs:
         path: dist
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        # Re-runs of the same tag must not fail on files already on PyPI.
+        skip-existing: true
 
   github-release:
     name: Sign and upload to GitHub Release
