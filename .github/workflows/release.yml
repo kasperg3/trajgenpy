@@ -24,9 +24,10 @@ jobs:
         CIBW_BEFORE_ALL_LINUX: |
           yum install -y epel-release
           yum install -y CGAL-devel
-        # The wheel is installed with its dependencies; pytest runs the suite
+        # The wheel is installed WITHOUT its dependencies in the test venv,
+        # so install the runtime requirements first. The test suite runs
         # from /tmp so the source tree does not shadow the installed package.
-        CIBW_TEST_REQUIRES: pytest
+        CIBW_BEFORE_TEST: python -m pip install -r {project}/requirements.txt
         CIBW_TEST_COMMAND: sh -c "cd /tmp && python -m pytest -q {project}/tests"
     - name: Upload wheels
       uses: actions/upload-artifact@v4
