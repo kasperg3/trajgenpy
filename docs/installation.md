@@ -1,12 +1,31 @@
 # Installation
 
-TrajGenPy has a C++ extension built with [CGAL](https://www.cgal.org/) and
-[pybind11](https://pybind11.readthedocs.io/), so you need the system libraries
-before installing the Python package.
+TrajGenPy publishes **pre-built manylinux wheels** on PyPI for CPython
+3.10–3.14 on Linux x86_64. On those platforms a plain
+
+```bash
+pip install trajgenpy
+```
+
+needs **no** system dependencies — the wheel bundles the compiled C++
+extension (CGAL, pybind11), and the sweep/decomposition algorithms run
+without any local CGAL installation.
+
+The package is regularly updated; upgrade to the latest release with:
+
+```bash
+pip install --upgrade trajgenpy
+```
+
+On any other platform (other Linux architectures, macOS, Windows, or other
+Python versions), pip falls back to the source distribution and you must
+build the C++ extension yourself — the system requirements below then apply.
 
 ---
 
-## System requirements
+## System requirements (source builds only)
+
+Only needed when installing from the source distribution (no matching wheel):
 
 | Requirement | Version | Notes |
 |---|---|---|
@@ -26,27 +45,6 @@ sudo apt-get install -y libcgal-dev pybind11-dev
 
 ```bash
 brew install cgal pybind11
-```
-
-!!! note
-    Pre-built wheels on PyPI include the compiled extension, so macOS and
-    Windows users who install a published wheel do **not** need CGAL or pybind11
-    at runtime.
-
----
-
-## Install from PyPI
-
-Once the system dependencies are present, install with pip:
-
-```bash
-pip install trajgenpy
-```
-
-The package is regularly updated; upgrade to the latest release with:
-
-```bash
-pip install --upgrade trajgenpy
 ```
 
 ---

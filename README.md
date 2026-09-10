@@ -14,17 +14,19 @@
 
 ## Installation
 
-The package is regularly updated and new releases are created when significant changes to the main branch has happened.
+Pre-built manylinux wheels are published to PyPI for CPython 3.10–3.14 on
+Linux x86_64, so a plain pip install needs **no** system dependencies:
 
-Requirements:
-```bash
-sudo apt-get update && apt-get -y install libcgal-dev pybind11-dev
-```
-
-Install using pip:
 ```bash
 pip install trajgenpy
 ```
+
+The package is regularly updated and new releases are created when significant
+changes to the main branch has happened.
+
+For other platforms or Python versions, pip falls back to the source
+distribution and you must build the C++ extension yourself — see
+[Build from source](#build-from-source) for the required system packages.
 
 ## Build from source
 
