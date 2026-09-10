@@ -1,11 +1,12 @@
 import math
+import random
 
 import geojson
 import pyproj
 import shapely
 import shapely.plotting as shplt
 from shapely.geometry.polygon import orient
-import random
+
 import trajgenpy.bindings as bindings
 from trajgenpy import Logging
 
@@ -28,7 +29,7 @@ class GeoData:
         self.crs = crs
         return self
 
-    def _convert_to_crs(self, crs):  # noqa: ARG002
+    def _convert_to_crs(self, crs):
         msg = "_convert_to_crs(crs) sould be implemented in the data classes!"
         raise NotImplementedError(msg)
 
@@ -41,7 +42,12 @@ class GeoData:
         return self.geometry
 
     def buffer(self, distance, quad_segs=1, cap_style="square", join_style="bevel"):
-        self.geometry = self.geometry.buffer(distance, quad_segs, cap_style, join_style)
+        self.geometry = self.geometry.buffer(
+            distance,
+            quad_segs=quad_segs,
+            cap_style=cap_style,
+            join_style=join_style,
+        )
         return self
 
     def __str__(self):
@@ -331,23 +337,56 @@ def _snap_polygon(polygon: shapely.Polygon, precision: int = 1) -> shapely.Polyg
     issues, while introducing at most 5 cm of positional error — negligible for
     any practical coverage-planning use case.
 
+    Vertices that round to the same grid point are merged (consecutive
+    duplicates dropped). If the exterior ring degenerates below three distinct
+    points, or the snapped polygon becomes invalid or zero-area, an empty
+    polygon is returned so callers can skip the cell instead of feeding a
+    degenerate ring to CGAL, whose sweep code rejects collapsed boundaries
+    with a hard error.
+
     Args:
         polygon: Shapely Polygon whose vertices will be snapped.
         precision: Number of decimal places to round to (default 1 → 10 cm in
             a metric CRS such as UTM).
 
     Returns:
-        A new Shapely Polygon with snapped coordinates.
+        A new Shapely Polygon with snapped coordinates, or an empty polygon
+        if snapping degenerates the input.
     """
-    exterior = [
-        (round(x, precision), round(y, precision))
-        for x, y in polygon.exterior.coords
-    ]
-    interiors = [
-        [(round(x, precision), round(y, precision)) for x, y in ring.coords]
-        for ring in polygon.interiors
-    ]
-    return shapely.Polygon(exterior, interiors)
+
+    def _snap_ring(coords):
+        rounded = [
+            (round(x, precision), round(y, precision))
+            for x, y in coords
+        ]
+        # Drop consecutive duplicates produced by rounding (shapely re-closes
+        # the ring, so also drop a trailing point equal to the first).
+        deduped = [
+            point
+            for i, point in enumerate(rounded)
+            if i == 0 or point != rounded[i - 1]
+        ]
+        if len(deduped) > 1 and deduped[0] == deduped[-1]:
+            deduped.pop()
+        return deduped
+
+    exterior = _snap_ring(polygon.exterior.coords)
+    if len(exterior) < 3:
+        return shapely.Polygon()
+    interiors = []
+    for ring in polygon.interiors:
+        snapped = _snap_ring(ring.coords)
+        if len(snapped) >= 3:
+            interiors.append(snapped)
+    snapped_polygon = shapely.Polygon(exterior, interiors)
+    if _is_degenerate(snapped_polygon):
+        return shapely.Polygon()
+    return snapped_polygon
+
+
+def _is_degenerate(polygon: shapely.Polygon) -> bool:
+    """Return whether a polygon has no usable interior for coverage planning."""
+    return polygon.is_empty or polygon.area <= 0 or not polygon.is_valid
 
 
 def generate_sweep_pattern(
@@ -359,6 +398,15 @@ def generate_sweep_pattern(
     # Snap coordinates to 10 cm precision to remove pyproj floating-point noise
     # that can cause CGAL to SIGSEGV on otherwise valid polygon inputs.
     polygon = _snap_polygon(polygon)
+    if _is_degenerate(polygon):
+        msg = (
+            "Polygon degenerated after snapping coordinates to a 10 cm grid "
+            "(zero area or invalid ring); sweep patterns cannot be generated "
+            "for degenerate polygons. This usually happens when a decomposed "
+            "cell is an extremely thin sliver whose vertices collapse onto "
+            "each other after rounding."
+        )
+        raise ValueError(msg)
     # Make sure that the orientation of the polygon is counterclockwise and the interior is clockwise
     cgal_poly = shapely_polygon_to_cgal(orient(polygon=polygon))
     segments = bindings.generate_sweeps(
@@ -390,6 +438,12 @@ def decompose_polygon(
     # Snap coordinates to 10 cm precision to remove pyproj floating-point noise
     # that can cause CGAL to SIGSEGV on otherwise valid polygon inputs.
     boundary = _snap_polygon(boundary)
+    if _is_degenerate(boundary):
+        msg = (
+            "Boundary polygon degenerated after snapping coordinates to a "
+            "10 cm grid; cannot decompose it into coverage cells."
+        )
+        raise ValueError(msg)
     if obstacles is not None:
         if isinstance(obstacles, shapely.Polygon):
             obstacles = shapely.MultiPolygon([obstacles])
@@ -404,7 +458,7 @@ def decompose_polygon(
                 log.debug(
                     "Obstacles intersect with the boundary, the geometries will be merged."
                 )
-                boundary = obstacles.union(boundary)
+                boundary = _snap_polygon(obstacle.union(boundary))
             else:
                 updated_obstacles.append(_snap_polygon(obstacle))
 
@@ -414,7 +468,15 @@ def decompose_polygon(
         for poly in obstacles.geoms:
             pwh.add_hole(shapely_polygon_to_cgal(poly))
     decompose_polygons = bindings.decompose(pwh)
-    return [
-        shapely.Polygon([(vertex.x, vertex.y) for vertex in polygon])
-        for polygon in decompose_polygons
-    ]
+    cells = []
+    for polygon in decompose_polygons:
+        # Drop cells that collapse under coordinate snapping (e.g. thin
+        # slivers whose vertices land on the same grid point); CGAL sweep
+        # generation rejects degenerate rings with a hard error.
+        coords = [(vertex.x, vertex.y) for vertex in polygon]
+        if len(coords) < 3:
+            continue
+        cell = _snap_polygon(shapely.Polygon(coords))
+        if not _is_degenerate(cell):
+            cells.append(cell)
+    return cells

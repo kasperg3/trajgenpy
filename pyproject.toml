@@ -5,7 +5,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "trajgenpy"
 
-version = "0.2.0"
+version = "0.3.1"
 
 description = "TrajGenPy is a Python library that provides functionality for trajectory task generation using the Boustrophedon Cell Decomposition algorithm for coverage generation."
 readme = "README.md"
@@ -28,6 +28,9 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 
 [tool.scikit-build]
@@ -47,6 +50,7 @@ testpaths = ["tests"]
 # pythonpath = [".", "src"]
 
 [tool.ruff]
+exclude = ["examples"]
 select = [
     "E",
     "F",

@@ -1,5 +1,6 @@
 import math
 
+import pyproj
 import pytest
 from shapely.geometry import LineString, Point, Polygon
 from trajgenpy import Geometries, Logging
@@ -36,14 +37,13 @@ log = Logging.get_logger()
 
 # Test initialization and conversion for Trajectory class
 def test_trajectory():
-    linestring = LineString(
-        [
-            (12.620400, 55.687962),
-            (12.632788, 55.691589),
-            (12.637446, 55.687689),
-            (12.624924, 55.683489),
-        ]
-    )
+    coords = [
+        (12.620400, 55.687962),
+        (12.632788, 55.691589),
+        (12.637446, 55.687689),
+        (12.624924, 55.683489),
+    ]
+    linestring = LineString(coords)
     trajectory = Geometries.GeoTrajectory(linestring)
 
     # Check initial CRS
@@ -55,14 +55,13 @@ def test_trajectory():
     # Check the new CRS
     assert trajectory.crs == "EPSG:3857"
 
-    # Check converted geometry
+    # Check converted geometry. Expected values are computed with pyproj at
+    # runtime instead of hardcoded, so the test stays valid across PROJ
+    # versions.
+    transformer = pyproj.Transformer.from_crs("WGS84", "EPSG:3857", always_xy=True)
+    expected = [transformer.transform(x, y) for x, y in coords]
     converted_coords = list(trajectory.get_geometry().coords)
-    assert pytest.approx(converted_coords) == [
-        (1404896.5016074297, 7496546.845393788),
-        (1406275.5274593767, 7497263.139176297),
-        (1406794.053647492, 7496492.933496759),
-        (1405400.1109837785, 7495663.567131141),
-    ]
+    assert pytest.approx(converted_coords) == expected
 
 
 # Test initialization and conversion for PointData class
@@ -79,8 +78,12 @@ def test_point_data():
     # Check the new CRS
     assert point_data.crs == "EPSG:3857"
 
-    # Check converted geometry
-    assert point_data.get_geometry() == Point(1405400.1109837785, 7495663.567131141)
+    # Check converted geometry. Expected values are computed with pyproj at
+    # runtime instead of hardcoded, so the test stays valid across PROJ
+    # versions.
+    transformer = pyproj.Transformer.from_crs("WGS84", "EPSG:3857", always_xy=True)
+    expected = transformer.transform(12.624924, 55.683489)
+    assert point_data.get_geometry() == Point(*expected)
 
 
 # Test initialization and conversion for PolygonData class
@@ -104,15 +107,13 @@ def test_polygon_data():
     # Check the new CRS
     assert polygon_data.crs == "EPSG:3857"
 
-    # Check converted geometry
+    # Check converted geometry. Expected values are computed with pyproj at
+    # runtime instead of hardcoded, so the test stays valid across PROJ
+    # versions.
+    transformer = pyproj.Transformer.from_crs("WGS84", "EPSG:3857", always_xy=True)
+    expected = [transformer.transform(x, y) for x, y in polygon.exterior.coords]
     converted_coords = list(polygon_data.get_geometry().exterior.coords)
-    assert pytest.approx(converted_coords) == [
-        (1404896.5016074297, 7496546.845393788),
-        (1406275.5274593767, 7497263.139176297),
-        (1406794.053647492, 7496492.933496759),
-        (1405400.1109837785, 7495663.567131141),
-        (1404896.5016074297, 7496546.845393788),
-    ]
+    assert pytest.approx(converted_coords) == expected
 
 
 def test_valid_inputs():
@@ -171,8 +172,10 @@ def test_decompose():
 
     # Assert that the sum of areas of the decomposed polygons is equal to the area of the original polygon
     total_area = geo_poly.get_geometry().area - hole.get_geometry().area
-    assert pytest.approx(sum([poly.area for poly in polygon_list])) == total_area
+    # Cells are returned on a 10 cm grid, so allow for the small rounding loss.
+    assert pytest.approx(sum([poly.area for poly in polygon_list]), rel=1e-3) == total_area
     assert len(polygon_list) > 0
+    assert all(poly.is_valid and poly.area > 0 for poly in polygon_list)
 
 
 def test_sweep_gen():
@@ -192,6 +195,25 @@ def test_sweep_gen():
         geo_poly.get_geometry(), offset, clockwise=False, connect_sweeps=True
     )
     assert len(test) == 1
+
+
+def test_snap_polygon_deduplicates_collapsed_vertices():
+    # A quad whose two middle vertices are ~1.4 cm apart collapses to a valid
+    # triangle instead of carrying a zero-length edge into CGAL.
+    quad = Polygon(
+        [
+            (0.0, 0.0),
+            (50.0, 0.0),
+            (50.01, 0.01),
+            (0.0, 50.0),
+        ]
+    )
+    snapped = Geometries._snap_polygon(quad)
+    assert not snapped.is_empty
+    assert snapped.is_valid
+    assert snapped.area > 0
+    coords = list(snapped.exterior.coords)
+    assert len(coords) == 4  # three distinct vertices plus the ring closure
 
 
 def test_sweep_gen_with_obstacle():
@@ -290,6 +312,75 @@ def test_obstacle_polygon_overlaps_boundary():
         geo_poly.get_geometry(), obstacles=hole.get_geometry()
     )
     assert polygon_list is not None
+
+
+def test_generate_sweep_pattern_rejects_degenerate_polygon():
+    # A zero-width sliver whose vertices all collapse onto a single line when
+    # snapped to the 10 cm grid. CGAL would reject the collapsed ring with
+    # "Outer polygon is not counterclockwise oriented"; the Python wrapper must
+    # fail with an actionable message instead.
+    sliver = Polygon(
+        [
+            (0.0, 0.0),
+            (10.0, 0.0),
+            (10.0, 0.01),
+            (0.0, 0.02),
+        ]
+    )
+    with pytest.raises(ValueError, match="degenerated"):
+        Geometries.generate_sweep_pattern(sliver, 40.0)
+
+
+def test_decompose_survives_snap_collapsed_sliver():
+    # Regression: real-world farmland polygon (vt_kentland_farm farmland_2)
+    # whose eroded UTM form decomposes into a ~920 m long sliver with two
+    # vertices ~1 cm apart. Snapping previously collapsed the sliver into a
+    # zero-area ring that CGAL rejected with "Outer polygon is not
+    # counterclockwise oriented".
+    farmland_2_wgs84 = [
+        (-80.564768, 37.199826),
+        (-80.565262, 37.19962),
+        (-80.566511, 37.199026),
+        (-80.567106, 37.198662),
+        (-80.568439, 37.197897),
+        (-80.569795, 37.197109),
+        (-80.572261, 37.195472),
+        (-80.573466, 37.194633),
+        (-80.574323, 37.194076),
+        (-80.575211, 37.194813),
+        (-80.575586, 37.194591),
+        (-80.576373, 37.195287),
+        (-80.576714, 37.195063),
+        (-80.577754, 37.195522),
+        (-80.577024, 37.196719),
+        (-80.5766, 37.19768),
+        (-80.574444, 37.198616),
+        (-80.572673, 37.198637),
+        (-80.570174, 37.199227),
+        (-80.56939, 37.199423),
+        (-80.568645, 37.19971),
+        (-80.567127, 37.200368),
+        (-80.565319, 37.200889),
+        (-80.565009, 37.200291),
+        (-80.564768, 37.199826),
+    ]
+
+    poly = Polygon(farmland_2_wgs84)
+    geo_poly = Geometries.GeoPolygon(poly)
+    geo_poly.set_crs("EPSG:32617")
+    geo_poly.buffer(-2)
+
+    cells = Geometries.decompose_polygon(geo_poly.get_geometry(), obstacles=None)
+    assert len(cells) > 0
+    assert all(cell.is_valid and cell.area > 0 for cell in cells)
+
+    # Mirrors the swarm-steward worker: 20.2 m altitude, 75.7° FOV, 20% overlap.
+    offset = Geometries.get_sweep_offset(0.2, 20.2, 75.7)
+    for cell in cells:
+        sweeps = Geometries.generate_sweep_pattern(
+            cell, offset, clockwise=True, connect_sweeps=False
+        )
+        assert len(sweeps) > 0
 
 
 if __name__ == "__main__":
