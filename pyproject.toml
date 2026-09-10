@@ -40,6 +40,11 @@ minimum-version = "build-system.requires"
 
 [project.optional-dependencies]
 test = ["pytest"]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -81,6 +86,7 @@ select = [
 extend-ignore = [
     "PLR",  # Design related pylint codes
     "E501", # Line too long
+    "RUF002", # En-dashes in docstrings are intentional for readability
 ]
 target-version = "py310"
 src = ["src"]

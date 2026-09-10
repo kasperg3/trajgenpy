@@ -1,3 +1,19 @@
+"""Coloured logging setup for TrajGenPy.
+
+This module configures a :mod:`logging` logger named ``"trajgenpy"`` with
+ANSI colour formatting via `colorama <https://pypi.org/project/colorama/>`_.
+Each log level is rendered in a distinct colour:
+
+- **TRACE** – magenta
+- **DEBUG** – blue
+- **INFO** – green
+- **WARNING** – yellow
+- **ERROR** – red
+
+The logger is initialised automatically when the module is first imported.
+All TrajGenPy modules obtain the logger via :func:`get_logger`.
+"""
+
 import inspect
 import logging
 from pathlib import Path
@@ -8,6 +24,21 @@ LOGGER_NAME = "trajgenpy"
 
 
 def init_logger():
+    """Initialise and return the ``"trajgenpy"`` logger.
+
+    Creates a :class:`logging.StreamHandler` with a
+    :class:`~logging.Formatter` that prepends ANSI colour codes to the log
+    level name and appends the originating file name and line number.  The
+    logger level is set to ``DEBUG`` so that all messages are forwarded to
+    handlers; adjust individual handlers if a higher threshold is desired.
+
+    Calling this function more than once is safe — the handler is always
+    attached, but :func:`get_logger` should be preferred for normal usage
+    as it returns the existing logger without re-initialising it.
+
+    Returns:
+        logging.Logger: The configured ``"trajgenpy"`` logger instance.
+    """
     # Initialize colorama to support ANSI color codes on Windows
     colorama.init()
 
@@ -45,35 +76,17 @@ def init_logger():
 
 
 def get_logger():
+    """Return the ``"trajgenpy"`` logger.
+
+    If the logger has not been initialised yet (no handlers attached),
+    :func:`init_logger` is called automatically.  This function is the
+    preferred way to obtain the logger from within TrajGenPy modules.
+
+    Returns:
+        logging.Logger: The ``"trajgenpy"`` logger instance.
+    """
     return logging.getLogger(LOGGER_NAME)
 
 
 if get_logger().handlers == []:
     init_logger()
-
-
-# def debug(*args, **kwargs):
-#     message = " ".join(map(str, args))
-#     logging.getLogger(LOGGER_NAME).debug(message, **kwargs)
-
-
-# def info(*args, **kwargs):
-#     message = " ".join(map(str, args))
-#     logging.getLogger(LOGGER_NAME).info(message, **kwargs)
-
-
-# def warning(*args, **kwargs):
-#     message = " ".join(map(str, args))
-#     logging.getLogger(LOGGER_NAME).warning(message, **kwargs)
-
-
-# def error(*args, **kwargs):
-#     message = " ".join(map(str, args))
-#     logging.getLogger(LOGGER_NAME).error(message, **kwargs)
-
-
-# if __name__ == "__main__":
-#     debug("This is a debug message")
-#     info("This is an info message")
-#     warning("This is a warning message")
-#     error("This is an error message")

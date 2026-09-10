@@ -170,9 +170,13 @@ def test_decompose():
         geo_poly.get_geometry(), obstacles=hole.get_geometry()
     )
 
-    # Assert that the sum of areas of the decomposed polygons is equal to the area of the original polygon
-    total_area = geo_poly.get_geometry().area - hole.get_geometry().area
-    # Cells are returned on a 10 cm grid, so allow for the small rounding loss.
+    # Assert that the sum of areas of the decomposed polygons is equal to the area of the
+    # snapped polygon minus the snapped hole. decompose_polygon snaps coordinates to 10 cm
+    # precision before CGAL calls, so the reference areas must be computed from the same
+    # snapped geometries rather than the original unsnapped inputs.
+    snapped_boundary = Geometries._snap_polygon(geo_poly.get_geometry())
+    snapped_hole = Geometries._snap_polygon(hole.get_geometry())
+    total_area = snapped_boundary.area - snapped_hole.area
     assert pytest.approx(sum([poly.area for poly in polygon_list]), rel=1e-3) == total_area
     assert len(polygon_list) > 0
     assert all(poly.is_valid and poly.area > 0 for poly in polygon_list)
