@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.23.4
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_BUILD: "cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
           # AlmaLinux 8 image; EPEL 8 provides cgal-devel (CGAL 5.6.3).
