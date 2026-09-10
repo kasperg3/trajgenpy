@@ -5,7 +5,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "trajgenpy"
 
-version = "0.3.0"
+version = "0.3.1"
 
 description = "TrajGenPy is a Python library that provides functionality for trajectory task generation using the Boustrophedon Cell Decomposition algorithm for coverage generation."
 readme = "README.md"
@@ -28,12 +28,22 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 
 [tool.scikit-build]
 cmake.build-type = "Release"
 wheel.expand-macos-universal-tags = true
 minimum-version = "build-system.requires"
+
+[[tool.cibuildwheel.overrides]]
+# CPython 3.14 interpreters require glibc >= 2.34, so the cp314 wheel must be
+# built on the AlmaLinux 9 image. Older Pythons stay on manylinux_2_28 for
+# maximum distro compatibility.
+select = "cp314-manylinux_x86_64"
+manylinux-x86_64-image = "manylinux_2_34"
 
 [project.optional-dependencies]
 test = ["pytest"]
@@ -52,6 +62,7 @@ testpaths = ["tests"]
 # pythonpath = [".", "src"]
 
 [tool.ruff]
+exclude = ["examples"]
 select = [
     "E",
     "F",
@@ -82,6 +93,7 @@ select = [
 extend-ignore = [
     "PLR",  # Design related pylint codes
     "E501", # Line too long
+    "RUF002", # En-dashes in docstrings are intentional for readability
 ]
 target-version = "py310"
 src = ["src"]

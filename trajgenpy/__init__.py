@@ -35,7 +35,8 @@ Example:
         sweeps = [generate_sweep_pattern(cell, offset) for cell in cells]
 """
 
-from importlib.metadata import PackageNotFoundError, version as _package_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _package_version
 
 try:
     __version__ = _package_version(__name__)
@@ -44,4 +45,4 @@ except PackageNotFoundError:
 
 from trajgenpy import Geometries, Query, Utils
 
-__all__ = ["__doc__", "__version__", "Geometries", "Query", "Utils"]
+__all__ = ["Geometries", "Query", "Utils", "__doc__", "__version__"]
