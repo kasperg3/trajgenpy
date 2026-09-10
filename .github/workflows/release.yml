@@ -19,10 +19,11 @@ jobs:
         # AlmaLinux 8 image; EPEL 8 provides cgal-devel (CGAL 5.6.3).
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
         # CGAL (header-only) plus its gmp/mpfr/boost dependencies is required
-        # to compile the pybind11 bindings.
+        # to compile the pybind11 bindings. EPEL 8 spells the package
+        # "CGAL-devel" (capitalised).
         CIBW_BEFORE_ALL_LINUX: |
           yum install -y epel-release
-          yum install -y cgal-devel
+          yum install -y CGAL-devel
         # The wheel is installed with its dependencies; pytest runs the suite
         # from /tmp so the source tree does not shadow the installed package.
         CIBW_TEST_REQUIRES: pytest
