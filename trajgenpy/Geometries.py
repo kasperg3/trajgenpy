@@ -580,11 +580,11 @@ def _snap_polygon(polygon: shapely.Polygon, precision: int = 1) -> shapely.Polyg
     issues, while introducing at most 5 cm of positional error — negligible for
     any practical coverage-planning use case.
 
-    Vertices that round to the same grid point are merged (consecutive
-    duplicates dropped). If the exterior ring degenerates below three distinct
-    points, or the snapped polygon becomes invalid or zero-area, an empty
-    polygon is returned so callers can skip the cell instead of feeding a
-    degenerate ring to CGAL, whose sweep code rejects collapsed boundaries
+    Vertices that round to the same grid point are merged by dropping
+    consecutive duplicates. If the exterior ring degenerates below three
+    distinct points, or the snapped polygon becomes invalid or zero-area, an
+    empty polygon is returned so callers can skip the cell instead of feeding
+    a degenerate ring to CGAL, whose sweep code rejects collapsed boundaries
     with a hard error.
 
     Args:
@@ -598,9 +598,11 @@ def _snap_polygon(polygon: shapely.Polygon, precision: int = 1) -> shapely.Polyg
     """
 
     def _snap_ring(coords):
+        # Index into each coordinate pair so 3D rings (with a Z coordinate)
+        # are handled by dropping Z, matching the reprojection behaviour.
         rounded = [
-            (round(x, precision), round(y, precision))
-            for x, y in coords
+            (round(point[0], precision), round(point[1], precision))
+            for point in coords
         ]
         # Drop consecutive duplicates produced by rounding (shapely re-closes
         # the ring, so also drop a trailing point equal to the first).
